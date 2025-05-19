@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alimentar - Lumen Logos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Incluir TinyMCE para el editor de texto enriquecido -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="main-header">
+                <div class="logo">
+                    <img src="images/logo1.png" alt="Lumen Logos">
+                    <div class="logo-text">
+                        <h1>Lumen Logos</h1>
+                        <p>La Luz del Verbo</p>
+                    </div>
+                </div>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Principal</a></li>
+                        <li><a href="about.html">Acera de</a>
+                            <ul>
+                                <li><a href="mission.html">Nuestra Misión</a></li>
+                                <li><a href="history.html">Historia</a></li>
+                                <li><a href="statement-of-faith.html">Declaración de Fé</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="programs.html">CONOCIMIENTO</a>
+                            <ul>
+                                <li><a href="master-of-divinity.html">Estudios</a></li>
+                                <li><a href="master-of-arts.html">Consultas</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="faculty.html">Enlaces</a></li>
+                        <li><a href="admissions.html">Titulos</a>
+                            <ul>
+                                <li><a href="requirements.html">Requirements</a></li>
+                                <li><a href="tuition.html">Tuition & Fees</a></li>
+                                <li><a href="financial-aid.html">Financial Aid</a></li>
+                                <li><a href="apply.html">Apply Now</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="resources.html">Buscar</a>
+                            <ul>
+                                <li><a href="library.html">Library</a></li>
+                                <li><a href="blog.html">Blog</a></li>
+                                <li><a href="events.html">Events</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="contact.html">Contacto</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="page-content" style="margin-top: 150px; padding: 50px 0;">
+        <div class="container">
+            <h2 class="text-center mb-5">Alimentar Biblioteca Digital</h2>
+            
+            <!-- Password Protection -->
+            <div id="password-section" class="text-center">
+                <p>Para contribuir con contenido a nuestra biblioteca digital, por favor ingrese la contraseña:</p>
+                <div class="form-group" style="max-width: 400px; margin: 0 auto;">
+                    <input type="password" id="access-password" class="form-control" placeholder="Contraseña de acceso" style="padding: 10px; margin-bottom: 15px; width: 100%; border: 1px solid #ddd; border-radius: 5px;">
+                    <button id="validate-password" class="btn btn-primary" style="width: 100%;">Acceder</button>
+                    <p id="password-error" style="color: red; margin-top: 10px; display: none;">Contraseña incorrecta. Por favor intente de nuevo.</p>
+                </div>
+            </div>
+            
+            <!-- Upload Form (hidden by default) -->
+            <div id="upload-form" style="display: none;">
+                <form id="content-form">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="title" style="display: block; margin-bottom: 5px; font-weight: 600;">Título*</label>
+                        <input type="text" id="title" name="title" required class="form-control" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="description" style="display: block; margin-bottom: 5px; font-weight: 600;">Descripción breve*</label>
+                        <textarea id="description" name="description" rows="3" required class="form-control" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="content" style="display: block; margin-bottom: 5px; font-weight: 600;">Contenido completo*</label>
+                        <textarea id="content" name="content" required></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Archivo (opcional)</label>
+                        <input type="file" id="file" name="file" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <small style="display: block; margin-top: 5px; color: #666;">Formatos permitidos: PDF, MP3, MP4, PNG, JPG, SVG, TXT, DOCX, PPTX</small>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Etiquetas</label>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label>Categorías existentes:</label>
+                            <select id="category-select" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                <option value="">Seleccionar categoría</option>
+                                <!-- Las categorías se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label>Etiquetas de la categoría:</label>
+                            <select id="tag-select" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" multiple>
+                                <!-- Las etiquetas se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label>Etiquetas seleccionadas:</label>
+                            <div id="selected-tags" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 50px;">
+                                <!-- Las etiquetas seleccionadas se mostrarán aquí -->
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <button type="button" id="add-category-btn" class="btn btn-outline" style="margin-right: 10px;">Crear nueva categoría</button>
+                            <button type="button" id="add-tag-btn" class="btn btn-outline">Crear nueva etiqueta</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group text-center" style="margin-top: 30px;">
+                        <button type="submit" class="btn btn-secondary" style="padding: 12px 30px;">Publicar contenido</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <img src="images/logo1.png" alt="Lumen Logos">
+                    </div>
+                    <div class="footer-contact">
+                        <div class="footer-contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <p>123 Seminary Drive</p>
+                                <p>Ciudad, CP 12345</p>
+                            </div>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <p>+123 456 7890</p>
+                            </div>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <p>info@lumenlogos.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h3 class="footer-title">Links rápidos</h3>
+                    <ul>
+                        <li><a href="about.html">Acerca de nosotros</a></li>
+                        <li><a href="programs.html">Conocimiento</a></li>
+                        <li><a href="faculty.html">Enlaces</a></li>
+                        <li><a href="admissions.html">Títulos</a></li>
+                        <li><a href="resources.html">Buscar</a></li>
+                        <li><a href="contact.html">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3 class="footer-title">Recursos</h3>
+                    <ul>
+                        <li><a href="library.html">Biblioteca</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="events.html">Eventos</a></li>
+                        <li><a href="#">Recursos de estudio</a></li>
+                        <li><a href="#">Centro de ayuda</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h3 class="footer-title">Recibir novedades</h3>
+                    <p>Suscríbete para recibir actualizaciones sobre nuevos recursos y eventos.</p>
+                    <form>
+                        <input type="email" placeholder="Tu correo electrónico" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: none; border-radius: 5px;">
+                        <button type="submit" class="btn btn-secondary" style="width: 100%;">Suscribirse</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Lumen Logos. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/scripts.js"></script>
+    <script>
+        // Inicializar TinyMCE
+        tinymce.init({
+            selector: '#content',
+            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste help wordcount',
+            toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+            height: 400
+        });
+        
+        // Contraseña de acceso (en un sitio real, esto se verificaría en el servidor)
+        // Se usa hash SHA-256 para ocultar la contraseña real
+        const passwordHash = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // 'admin' en SHA-256
+        
+        document.getElementById('validate-password').addEventListener('click', function() {
+            const password = document.getElementById('access-password').value;
+            const hash = sha256(password);
+            
+            if (hash === passwordHash) {
+                document.getElementById('password-section').style.display = 'none';
+                document.getElementById('upload-form').style.display = 'block';
+            } else {
+                document.getElementById('password-error').style.display = 'block';
+            }
+        });
+        
+        // Función simple para calcular SHA-256 (en producción, usa una biblioteca)
+        async function sha256(message) {
+            // Codificar como UTF-8
+            const msgBuffer = new TextEncoder().encode(message);
+            // Hash el mensaje
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            // Convertir ArrayBuffer a Array
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            // Convertir bytes a string hexadecimal
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+        
+        // Simulación de categorías y etiquetas (en un sitio real, se cargarían desde la base de datos)
+        const categories = [
+            { id: 1, name: 'Libro' },
+            { id: 2, name: 'Personaje' },
+            { id: 3, name: 'Tema' }
+        ];
+        
+        const tags = [
+            { id: 1, categoryId: 1, name: 'Salmos' },
+            { id: 2, categoryId: 1, name: 'Proverbios' },
+            { id: 3, categoryId: 2, name: 'David' },
+            { id: 4, categoryId: 2, name: 'Salomón' },
+            { id: 5, categoryId: 3, name: 'Gracia' },
+            { id: 6, categoryId: 3, name: 'Fe' }
+        ];
+        
+        // Cargar categorías
+        const categorySelect = document.getElementById('category-select');
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            categorySelect.appendChild(option);
+        });
+        
+        // Cargar etiquetas cuando se selecciona una categoría
+        categorySelect.addEventListener('change', function() {
+            const categoryId = parseInt(this.value);
+            const tagSelect = document.getElementById('tag-select');
+            tagSelect.innerHTML = '';
+            
+            if (categoryId) {
+                const filteredTags = tags.filter(tag => tag.categoryId === categoryId);
+                filteredTags.forEach(tag => {
+                    const option = document.createElement('option');
+                    option.value = tag.id;
+                    option.textContent = tag.name;
+                    tagSelect.appendChild(option);
+                });
+            }
+        });
+        
+        // Modal para crear nueva categoría
+        document.getElementById('add-category-btn').addEventListener('click', function() {
+            const categoryName = prompt('Ingrese el nombre de la nueva categoría:');
+            if (categoryName && categoryName.trim() !== '') {
+                // En un sitio real, esto se guardaría en la base de datos
+                const newId = categories.length + 1;
+                categories.push({ id: newId, name: categoryName });
+                
+                const option = document.createElement('option');
+                option.value = newId;
+                option.textContent = categoryName;
+                categorySelect.appendChild(option);
+                
+                // Seleccionar la nueva categoría
+                categorySelect.value = newId;
+                // Disparar el evento change para actualizar las etiquetas
+                categorySelect.dispatchEvent(new Event('change'));
+                
+                alert('Categoría creada exitosamente.');
+            }
+        });
+        
+        // Modal para crear nueva etiqueta
+        document.getElementById('add-tag-btn').addEventListener('click', function() {
+            const categoryId = parseInt(categorySelect.value);
+            if (!categoryId) {
+                alert('Por favor seleccione una categoría primero.');
+                return;
+            }
+            
+            const tagName = prompt('Ingrese el nombre de la nueva etiqueta:');
+            if (tagName && tagName.trim() !== '') {
+                // En un sitio real, esto se guardaría en la base de datos
+                const newId = tags.length + 1;
+                tags.push({ id: newId, categoryId: categoryId, name: tagName });
+                
+                const option = document.createElement('option');
+                option.value = newId;
+                option.textContent = tagName;
+                document.getElementById('tag-select').appendChild(option);
+                
+                alert('Etiqueta creada exitosamente.');
+            }
+        });
+        
+        // Manejar selección de etiquetas
+        document.getElementById('tag-select').addEventListener('change', function() {
+            const selectedOptions = Array.from(this.selectedOptions);
+            const selectedTagsContainer = document.getElementById('selected-tags');
+            
+            selectedTagsContainer.innerHTML = '';
+            
+            selectedOptions.forEach(option => {
+                const tagElement = document.createElement('span');
+                tagElement.classList.add('tag');
+                tagElement.dataset.id = option.value;
+                tagElement.textContent = option.textContent;
+                tagElement.style.display = 'inline-block';
+                tagElement.style.padding = '5px 10px';
+                tagElement.style.margin = '0 5px 5px 0';
+                tagElement.style.backgroundColor = var(--secondary-color);
+                tagElement.style.color = var(--primary-color);
+                tagElement.style.borderRadius = '3px';
+                
+                const removeBtn = document.createElement('span');
+                removeBtn.innerHTML = '&times;';
+                removeBtn.style.marginLeft = '5px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.addEventListener('click', function() {
+                    tagElement.remove();
+                    option.selected = false;
+                });
+                
+                tagElement.appendChild(removeBtn);
+                selectedTagsContainer.appendChild(tagElement);
+            });
+        });
+        
+        // Manejar envío del formulario
+        document.getElementById('content-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Obtener el contenido del editor TinyMCE
+            const content = tinymce.get('content').getContent();
+            
+            // Recopilar datos del formulario
+            const formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                content: content,
+                tags: Array.from(document.querySelectorAll('#selected-tags .tag')).map(tag => ({
+                    id: tag.dataset.id,
+                    name: tag.textContent.replace('×', '').trim()
+                }))
+            };
+            
+            // Aquí se enviarían los datos a Supabase
+            console.log('Datos a enviar:', formData);
+            
+            // Simulación de envío exitoso
+            alert('¡Contenido publicado exitosamente!');
+            this.reset();
+            tinymce.get('content').setContent('');
+            document.getElementById('selected-tags').innerHTML = '';
+        });
+    </script>
+</body>
+</html>

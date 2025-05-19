@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento - Lumen Logos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .document-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 5px;
+        }
+        
+        .document-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .document-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .document-description {
+            font-size: 1.2rem;
+            color: var(--tertiary-color);
+            margin-bottom: 20px;
+        }
+        
+        .document-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--tertiary-color);
+        }
+        
+        .document-date {
+            display: flex;
+            align-items: center;
+        }
+        
+        .document-date i {
+            margin-right: 5px;
+        }
+        
+        .document-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .document-tag {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .document-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+        
+        .document-content p {
+            margin-bottom: 20px;
+        }
+        
+        .document-content h2, .document-content h3 {
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .document-content ul, .document-content ol {
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+        
+        .document-content li {
+            margin-bottom: 10px;
+        }
+        
+        .document-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .document-content blockquote {
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 20px;
+            margin-left: 0;
+            margin-right: 0;
+            font-style: italic;
+            color: var(--tertiary-color);
+        }
+        
+        .document-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .back-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .back-btn i {
+            margin-right: 5px;
+        }
+        
+        .back-btn:hover {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+        
+        .file-attachment {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+        
+        .file-attachment h3 {
+            margin-bottom: 10px;
+        }
+        
+        .file-link {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .file-link i {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        
+        .file-link:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="main-header">
+                <div class="logo">
+                    <img src="images/logo1.png" alt="Lumen Logos">
+                    <div class="logo-text">
+                        <h1>Lumen Logos</h1>
+                        <p>La Luz del Verbo</p>
+                    </div>
+                </div>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Principal</a></li>
+                        <li><a href="about.html">Acera de</a>
+                            <ul>
+                                <li><a href="mission.html">Nuestra Misión</a></li>
+                                <li><a href="history.html">Historia</a></li>
+                                <li><a href="statement-of-faith.html">Declaración de Fé</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="programs.html">CONOCIMIENTO</a>
+                            <ul>
+                                <li><a href="master-of-divinity.html">Estudios</a></li>
+                                <li><a href="master-of-arts.html">Consultas</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="faculty.html">Enlaces</a></li>
+                        <li><a href="admissions.html">Titulos</a>
+                            <ul>
+                                <li><a href="requirements.html">Requirements</a></li>
+                                <li><a href="tuition.html">Tuition & Fees</a></li>
+                                <li><a href="financial-aid.html">Financial Aid</a></li>
+                                <li><a href="apply.html">Apply Now</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="resources.html">Buscar</a>
+                            <ul>
+                                <li><a href="library.html">Library</a></li>
+                                <li><a href="blog.html">Blog</a></li>
+                                <li><a href="events.html">Events</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="contact.html">Contacto</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="page-content" style="margin-top: 150px; padding: 50px 0;">
+        <div class="container">
+            <div class="document-container">
+                <div class="document-header">
+                    <h1 class="document-title" id="document-title">Cargando documento...</h1>
+                    <p class="document-description" id="document-description"></p>
+                    <div class="document-meta">
+                        <div class="document-date">
+                            <i class="far fa-calendar-alt"></i>
+                            <span id="document-date"></span>
+                        </div>
+                        <div class="document-tags" id="document-tags">
+                            <!-- Las etiquetas se cargarán dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="document-content" id="document-content">
+                    <!-- El contenido del documento se cargará dinámicamente -->
+                </div>
+                
+                <div class="file-attachment" id="file-attachment" style="display: none;">
+                    <h3>Archivo adjunto</h3>
+                    <a href="#" class="file-link" id="file-link">
+                        <i class="fas fa-file-download"></i>
+                        <span id="file-name">Descargar archivo</span>
+                    </a>
+                </div>
+                
+                <div class="document-actions">
+                    <a href="consultar.html" class="back-btn">
+                        <i class="fas fa-arrow-left"></i> Volver a la biblioteca
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <img src="images/logo1.png" alt="Lumen Logos">
+                    </div>
+                    <div class="footer-contact">
+                        <div class="footer-contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <p>123 Seminary Drive</p>
+                                <p>Ciudad, CP 12345</p>
+                            </div>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <p>+123 456 7890</p>
+                            </div>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <p>info@lumenlogos.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h3 class="footer-title">Links rápidos</h3>
+                    <ul>
+                        <li><a href="about.html">Acerca de nosotros</a></li>
+                        <li><a href="programs.html">Conocimiento</a></li>
+                        <li><a href="faculty.html">Enlaces</a></li>
+                        <li><a href="admissions.html">Títulos</a></li>
+                        <li><a href="resources.html">Buscar</a></li>
+                        <li><a href="contact.html">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3 class="footer-title">Recursos</h3>
+                    <ul>
+                        <li><a href="library.html">Biblioteca</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="events.html">Eventos</a></li>
+                        <li><a href="#">Recursos de estudio</a></li>
+                        <li><a href="#">Centro de ayuda</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h3 class="footer-title">Recibir novedades</h3>
+                    <p>Suscríbete para recibir actualizaciones sobre nuevos recursos y eventos.</p>
+                    <form>
+                        <input type="email" placeholder="Tu correo electrónico" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: none; border-radius: 5px;">
+                        <button type="submit" class="btn btn-secondary" style="width: 100%;">Suscribirse</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Lumen Logos. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/scripts.js"></script>
+<script>
+    // Inicializar cliente de Supabase
+    // Reemplaza estos valores con tus credenciales de Supabase
+    const SUPABASE_URL = 'https://tu-proyecto-supabase.supabase.co';
+    const SUPABASE_KEY = 'tu-api-key-publica';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Obtener el ID del documento de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const documentId = parseInt(urlParams.get('id'));
+    
+    // Si no hay ID, redirigir a la página de consulta
+    if (!documentId) {
+        window.location.href = 'consultar.html';
+    }
+    
+    // Cargar el documento
+    async function loadDocument() {
+        try {
+            // Intentar obtener el documento de Supabase
+            const { data: document, error } = await supabase
+                .from('documents')
+                .select(`
+                    *,
+                    tags (*)
+                `)
+                .eq('id', documentId)
+                .single();
+                
+            if (error) throw error;
+            
+            // Si no se encuentra el documento, redirigir a la página de consulta
+            if (!document) {
+                alert('El documento solicitado no existe.');
+                window.location.href = 'consultar.html';
+                return;
+            }
+            
+            // Cargar los datos del documento en la página
+            document.getElementById('document-title').textContent = document.title;
+            document.getElementById('document-description').textContent = document.description;
+            document.getElementById('document-content').innerHTML = document.content;
+            
+            // Formatear y mostrar la fecha
+            const date = new Date(document.created_at || document.createdAt);
+            document.getElementById('document-date').textContent = date.toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            
+            // Mostrar las etiquetas
+            const tagsContainer = document.getElementById('document-tags');
+            tagsContainer.innerHTML = '';
+            
+            if (document.tags && document.tags.length > 0) {
+                document.tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'document-tag';
+                    tagElement.textContent = tag.name;
+                    tagsContainer.appendChild(tagElement);
+                });
+            }
+            
+            // Si hay un archivo adjunto, mostrar la sección de adjuntos
+            if (document.file_url || document.fileUrl) {
+                document.getElementById('file-attachment').style.display = 'block';
+                document.getElementById('file-name').textContent = document.file_name || document.fileName || 'Descargar archivo';
+                document.getElementById('file-link').href = document.file_url || document.fileUrl;
+                
+                // Cambiar el icono según el tipo de archivo
+                const fileIcon = document.querySelector('#file-link i');
+                const fileType = document.file_type || document.fileType || 'text';
+                
+                switch (fileType) {
+                    case 'pdf':
+                        fileIcon.className = 'fas fa-file-pdf';
+                        break;
+                    case 'audio':
+                        fileIcon.className = 'fas fa-file-audio';
+                        break;
+                    case 'video':
+                        fileIcon.className = 'fas fa-file-video';
+                        break;
+                    case 'image':
+                        fileIcon.className = 'fas fa-file-image';
+                        break;
+                    default:
+                        fileIcon.className = 'fas fa-file-alt';
+                }
+            }
+            
+            // Cambiar el título de la página
+            document.title = `${document.title} - Lumen Logos`;
+            
+        } catch (error) {
+            console.error('Error al cargar el documento:', error);
+            
+            // Cargar datos locales si hay error con Supabase
+            loadLocalDocument();
+        }
+    }
+    
+    // Cargar documento desde almacenamiento local (para demostración)
+    function loadLocalDocument() {
+        // Primero intenta cargar desde localStorage
+        const localDocuments = JSON.parse(localStorage.getItem('lumen_logos_documents') || '[]');
+        let document = localDocuments.find(doc => doc.id === documentId);
+        
+        // Si no encuentra en localStorage, usar datos de ejemplo
+        if (!document) {
+            const sampleDocuments = [
+                {
+                    id: 1,
+                    title: 'Estudio sobre el Salmo 23',
+                    description: 'Un análisis profundo del Salmo del pastor divino',
+                    content: '<p>El Salmo 23 es quizás uno de los pasajes más conocidos y amados de toda la Escritura. Escrito por el rey David, este hermoso poema utiliza la metáfora del pastor para describir el cuidado de Dios hacia sus hijos.</p><p>En el primer versículo, "Jehová es mi pastor, nada me faltará", David establece inmediatamente la relación íntima con Dios. Como pastor de ovejas en su juventud, David entendía perfectamente lo que significaba este rol protector.</p><p>Los versículos siguientes desarrollan diferentes aspectos del cuidado pastoral de Dios: provisión de descanso y alimento ("En lugares de delicados pastos me hará descansar"), guía espiritual ("Junto a aguas de reposo me pastoreará"), y restauración del alma ("Confortará mi alma").</p><p>La imagen cambia sutilmente en los versículos 4-5, donde David habla del "valle de sombra de muerte" y de la mesa preparada "delante de mis angustiadores". Aquí, Dios es presentado no solo como pastor sino como protector frente a los peligros y enemigos.</p><p>El salmo concluye con la confianza de que "el bien y la misericordia" seguirán al salmista todos los días de su vida, y culmina con la esperanza de habitar en la casa de Jehová "por largos días". Este final apunta hacia una relación eterna con Dios, trascendiendo las preocupaciones temporales.</p>',
+                    tags: [
+                        { id: 1, name: 'Salmos' },
+                        { id: 5, name: 'Gracia' }
+                    ],
+                    fileType: 'text',
+                    fileName: null,
+                    fileUrl: null,
+                    createdAt: '2025-05-15T10:30:00'
+                },
+                {
+                    id: 2,
+                    title: 'La vida del rey David',
+                    description: 'Biografía y legado del rey según el corazón de Dios',
+                    content: '<p>David, hijo de Isaí de Belén, es una de las figuras más prominentes del Antiguo Testamento. Su vida está marcada por extraordinarios contrastes: de pastor humilde a poderoso rey, de guerrero valiente a compositor sensible, de hombre íntegro a pecador arrepentido.</p><p>La primera aparición de David en la narrativa bíblica ocurre cuando el profeta Samuel lo unge como futuro rey de Israel (1 Samuel 16). Aunque era el menor de sus hermanos y aparentemente insignificante, Dios vio en él lo que nadie más podía ver: "Jehová no mira lo que mira el hombre; pues el hombre mira lo que está delante de sus ojos, pero Jehová mira el corazón".</p><p>La victoria de David sobre Goliat (1 Samuel 17) marcó el inicio de su vida pública. Este acto de valentía, motivado por su celo por el honor de Dios, captó la atención del rey Saúl y del pueblo. Sin embargo, la popularidad resultante provocó los celos de Saúl, iniciando un período de persecución durante el cual David demostró su respeto por la autoridad, negándose repetidamente a dañar al "ungido de Jehová".</p><p>Como rey, David unificó las tribus de Israel, conquistó Jerusalén estableciéndola como capital, y extendió las fronteras del reino. Su deseo de construir un templo para Dios, aunque no se le permitió realizarlo personalmente, reveló su profunda devoción.</p><p>El pecado de David con Betsabé y contra Urías (2 Samuel 11-12) representa el punto más oscuro de su vida. Sin embargo, su genuino arrepentimiento (reflejado en el Salmo 51) demuestra por qué Dios lo llamó "un hombre conforme a mi corazón" (Hechos 13:22) - no por su perfección, sino por su disposición a reconocer su pecado y volverse a Dios.</p><p>El legado de David incluye la dinastía que eventualmente produjo al Mesías, así como gran parte del libro de los Salmos, que continúa inspirando la adoración y la oración de creyentes alrededor del mundo.</p>',
+                    tags: [
+                        { id: 3, name: 'David' }
+                    ],
+                    fileType: 'text',
+                    fileName: null,
+                    fileUrl: null,
+                    createdAt: '2025-05-10T14:45:00'
+                },
+                {
+                    id: 3,
+                    title: 'La gracia en el Nuevo Testamento',
+                    description: 'Exploración del concepto teológico de la gracia divina',
+                    content: '<p>La gracia (del griego "charis") es uno de los conceptos teológicos fundamentales del Nuevo Testamento, representando el favor inmerecido de Dios hacia la humanidad. A diferencia de la ley del Antiguo Testamento, que establecía condiciones para la aceptación divina, la gracia en el Nuevo Testamento enfatiza la iniciativa divina y el don gratuito.</p><p>El apóstol Pablo es quien más extensamente desarrolla la teología de la gracia. En Romanos 3:24, declara que somos "justificados gratuitamente por su gracia, mediante la redención que es en Cristo Jesús". Esta afirmación fundamental establece que la salvación no puede ser ganada o merecida, sino que es un regalo de Dios.</p><p>En Efesios 2:8-9, Pablo refuerza esta idea: "Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios; no por obras, para que nadie se gloríe". Esta declaración excluye cualquier base para el orgullo humano en la salvación.</p><p>La gracia en el Nuevo Testamento no es simplemente un concepto abstracto sino que está encarnada en la persona de Jesucristo. Juan 1:14 dice que "el Verbo se hizo carne y habitó entre nosotros... lleno de gracia y de verdad". La venida de Cristo es la máxima expresión del favor inmerecido de Dios.</p><p>Además de su papel en la salvación inicial, la gracia también es presentada como el poder para la vida cristiana. Pablo escribe en 2 Corintios 12:9 que la gracia de Dios es suficiente, y que su poder se perfecciona en la debilidad. Esta "gracia capacitadora" sostiene al creyente en las pruebas y lo fortalece para el servicio.</p><p>Contrariamente a algunas interpretaciones, la gracia en el Nuevo Testamento no promueve el libertinaje moral. Como Pablo pregunta en Romanos 6:1-2: "¿Perseveraremos en el pecado para que la gracia abunde? En ninguna manera." La verdadera gracia, aunque no impone requisitos para la salvación, transforma al creyente y lo capacita para vivir en santidad.</p>',
+                    tags: [
+                        { id: 5, name: 'Gracia' },
+                        { id: 6, name: 'Fe' }
+                    ],
+                    fileType: 'text',
+                    fileName: null,
+                    fileUrl: null,
+                    createdAt: '2025-05-05T09:15:00'
+                }
+            ];
+            
+            document = sampleDocuments.find(doc => doc.id === documentId);
+        }
+        
+        // Si no se encuentra el documento, redirigir a la página de consulta
+        if (!document) {
+            alert('El documento solicitado no existe.');
+            window.location.href = 'consultar.html';
+            return;
+        }
+        
+        // Cargar los datos del documento en la página
+        document.getElementById('document-title').textContent = document.title;
+        document.getElementById('document-description').textContent = document.description;
+        document.getElementById('document-content').innerHTML = document.content;
+        
+        // Formatear y mostrar la fecha
+        const date = new Date(document.createdAt || document.created_at);
+        document.getElementById('document-date').textContent = date.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        // Mostrar las etiquetas
+        const tagsContainer = document.getElementById('document-tags');
+        tagsContainer.innerHTML = '';
+        
+        if (document.tags && document.tags.length > 0) {
+            document.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'document-tag';
+                tagElement.textContent = tag.name;
+                tagsContainer.appendChild(tagElement);
+            });
+        }
+        
+        // Si hay un archivo adjunto, mostrar la sección de adjuntos
+        if (document.fileUrl || document.file_url) {
+            document.getElementById('file-attachment').style.display = 'block';
+            document.getElementById('file-name').textContent = document.fileName || document.file_name || 'Descargar archivo';
+            document.getElementById('file-link').href = document.fileUrl || document.file_url;
+            
+            // Cambiar el icono según el tipo de archivo
+            const fileIcon = document.querySelector('#file-link i');
+            const fileType = document.fileType || document.file_type || 'text';
+            
+            switch (fileType) {
+                case 'pdf':
+                    fileIcon.className = 'fas fa-file-pdf';
+                    break;
+                case 'audio':
+                    fileIcon.className = 'fas fa-file-audio';
+                    break;
+                case 'video':
+                    fileIcon.className = 'fas fa-file-video';
+                    break;
+                case 'image':
+                    fileIcon.className = 'fas fa-file-image';
+                    break;
+                default:
+                    fileIcon.className = 'fas fa-file-alt';
+            }
+        }
+        
+        // Cambiar el título de la página
+        document.title = `${document.title} - Lumen Logos`;
+    }
+    
+    // Cargar el documento cuando la página esté lista
+    document.addEventListener('DOMContentLoaded', loadDocument);
+</script>
+</body>
+</html>

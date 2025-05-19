@@ -149,51 +149,7 @@
             color: var(--primary-color);
         }
         
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 1000;
-            overflow: auto;
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            width: 80%;
-            max-width: 900px;
-            border-radius: 5px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .close-modal {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .close-modal:hover {
-            color: black;
-        }
-        
-        .modal-title {
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .modal-body {
-            line-height: 1.6;
-        }
-        
+               
         .pagination {
             display: flex;
             justify-content: center;
@@ -344,15 +300,7 @@
             <div class="pagination" id="pagination">
                 <!-- La paginación se generará dinámicamente -->
             </div>
-            
-            <!-- Document Modal -->
-            <div id="document-modal" class="modal">
-                <div class="modal-content">
-                    <span class="close-modal">&times;</span>
-                    <h2 class="modal-title" id="modal-title"></h2>
-                    <div class="modal-body" id="modal-body"></div>
-                </div>
-            </div>
+                      
         </div>
     </section>
 
@@ -429,20 +377,149 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="js/data-manager.js"></script>
-    <script src="js/scripts.js"></script>
-
-    <!-- Scripts -->
-    <script src="js/scripts.js"></script>
-    <script>
-        // Simulación de datos (en un sitio real, estos vendrían de la base de datos)
-        const categories = [
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/scripts.js"></script>
+<script>
+    // Inicializar cliente de Supabase
+    // Reemplaza estos valores con tus credenciales de Supabase
+    const SUPABASE_URL = 'https://tu-proyecto-supabase.supabase.co';
+    const SUPABASE_KEY = 'tu-api-key-publica';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Variables para la paginación
+    let currentPage = 1;
+    let totalDocuments = 0;
+    let documentsPerPage = 9;
+    let allDocuments = [];
+    
+    // Cargar datos al iniciar la página
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            await loadCategories();
+            await loadTags();
+            await loadDocuments();
+        } catch (error) {
+            console.error('Error al cargar datos iniciales:', error);
+            loadSampleData();
+        }
+    });
+    
+    // Cargar categorías desde Supabase
+    async function loadCategories() {
+        try {
+            const { data: categories, error } = await supabase
+                .from('categories')
+                .select('*')
+                .order('name');
+                
+            if (error) throw error;
+            
+            const categoryFilters = document.getElementById('category-filters');
+            categoryFilters.innerHTML = '';
+            
+            categories.forEach(category => {
+                const filterOption = document.createElement('div');
+                filterOption.className = 'filter-option';
+                filterOption.innerHTML = `
+                    <input type="checkbox" id="category-${category.id}" value="${category.id}">
+                    <label for="category-${category.id}">${category.name}</label>
+                `;
+                categoryFilters.appendChild(filterOption);
+            });
+            
+            // Agregar eventos a los filtros
+            document.querySelectorAll('#category-filters input').forEach(input => {
+                input.addEventListener('change', applyFilters);
+            });
+            
+        } catch (error) {
+            console.error('Error al cargar categorías:', error);
+            throw error;
+        }
+    }
+    
+    // Cargar etiquetas desde Supabase
+    async function loadTags() {
+        try {
+            const { data: tags, error } = await supabase
+                .from('tags')
+                .select('*')
+                .order('name');
+                
+            if (error) throw error;
+            
+            const tagFilters = document.getElementById('tag-filters');
+            tagFilters.innerHTML = '';
+            
+            tags.forEach(tag => {
+                const filterOption = document.createElement('div');
+                filterOption.className = 'filter-option';
+                filterOption.innerHTML = `
+                    <input type="checkbox" id="tag-${tag.id}" value="${tag.id}">
+                    <label for="tag-${tag.id}">${tag.name}</label>
+                `;
+                tagFilters.appendChild(filterOption);
+            });
+            
+            // Agregar eventos a los filtros
+            document.querySelectorAll('#tag-filters input').forEach(input => {
+                input.addEventListener('change', applyFilters);
+            });
+            
+        } catch (error) {
+            console.error('Error al cargar etiquetas:', error);
+            throw error;
+        }
+    }
+    
+    // Cargar documentos desde Supabase
+    async function loadDocuments() {
+        try {
+            // Obtener recuento total de documentos
+            const { count, error: countError } = await supabase
+                .from('documents')
+                .select('*', { count: 'exact', head: true });
+                
+            if (countError) throw countError;
+            
+            totalDocuments = count || 0;
+            
+            // Obtener documentos para la página actual
+            const { data: documents, error } = await supabase
+                .from('documents')
+                .select(`
+                    *,
+                    tags (*)
+                `)
+                .order('created_at', { ascending: false })
+                .range((currentPage - 1) * documentsPerPage, currentPage * documentsPerPage - 1);
+                
+            if (error) throw error;
+            
+            // Guardar todos los documentos cargados para filtrado local
+            allDocuments = documents || [];
+            
+            // Renderizar documentos
+            renderDocuments(allDocuments);
+            
+            // Generar paginación
+            generatePagination(totalDocuments, documentsPerPage, currentPage);
+            
+        } catch (error) {
+            console.error('Error al cargar documentos:', error);
+            throw error;
+        }
+    }
+    
+    // Cargar datos de ejemplo en caso de error con Supabase
+    function loadSampleData() {
+        const sampleCategories = [
             { id: 1, name: 'Libro' },
             { id: 2, name: 'Personaje' },
             { id: 3, name: 'Tema' }
         ];
         
-        const tags = [
+        const sampleTags = [
             { id: 1, categoryId: 1, name: 'Salmos' },
             { id: 2, categoryId: 1, name: 'Proverbios' },
             { id: 3, categoryId: 2, name: 'David' },
@@ -451,47 +528,55 @@
             { id: 6, categoryId: 3, name: 'Fe' }
         ];
         
-        const documents = [
+        const sampleDocuments = [
             {
                 id: 1,
                 title: 'Estudio sobre el Salmo 23',
                 description: 'Un análisis profundo del Salmo del pastor divino',
-                content: '<p>El Salmo 23 es quizás uno de los pasajes más conocidos y amados de toda la Escritura. Escrito por el rey David, este hermoso poema utiliza la metáfora del pastor para describir el cuidado de Dios hacia sus hijos.</p><p>En el primer versículo, "Jehová es mi pastor, nada me faltará", David establece inmediatamente la relación íntima con Dios. Como pastor de ovejas en su juventud, David entendía perfectamente lo que significaba este rol protector.</p><p>Los versículos siguientes desarrollan diferentes aspectos del cuidado pastoral de Dios: provisión de descanso y alimento ("En lugares de delicados pastos me hará descansar"), guía espiritual ("Junto a aguas de reposo me pastoreará"), y restauración del alma ("Confortará mi alma").</p><p>La imagen cambia sutilmente en los versículos 4-5, donde David habla del "valle de sombra de muerte" y de la mesa preparada "delante de mis angustiadores". Aquí, Dios es presentado no solo como pastor sino como protector frente a los peligros y enemigos.</p><p>El salmo concluye con la confianza de que "el bien y la misericordia" seguirán al salmista todos los días de su vida, y culmina con la esperanza de habitar en la casa de Jehová "por largos días". Este final apunta hacia una relación eterna con Dios, trascendiendo las preocupaciones temporales.</p>',
+                content: '<p>El Salmo 23 es quizás uno de los pasajes más conocidos y amados de toda la Escritura...</p>',
                 tags: [
                     { id: 1, name: 'Salmos' },
                     { id: 5, name: 'Gracia' }
                 ],
                 fileType: 'text',
+                fileName: null,
+                fileUrl: null,
                 createdAt: '2025-05-15T10:30:00'
             },
             {
                 id: 2,
                 title: 'La vida del rey David',
                 description: 'Biografía y legado del rey según el corazón de Dios',
-                content: '<p>David, hijo de Isaí de Belén, es una de las figuras más prominentes del Antiguo Testamento. Su vida está marcada por extraordinarios contrastes: de pastor humilde a poderoso rey, de guerrero valiente a compositor sensible, de hombre íntegro a pecador arrepentido.</p><p>La primera aparición de David en la narrativa bíblica ocurre cuando el profeta Samuel lo unge como futuro rey de Israel (1 Samuel 16). Aunque era el menor de sus hermanos y aparentemente insignificante, Dios vio en él lo que nadie más podía ver: "Jehová no mira lo que mira el hombre; pues el hombre mira lo que está delante de sus ojos, pero Jehová mira el corazón".</p><p>La victoria de David sobre Goliat (1 Samuel 17) marcó el inicio de su vida pública. Este acto de valentía, motivado por su celo por el honor de Dios, captó la atención del rey Saúl y del pueblo. Sin embargo, la popularidad resultante provocó los celos de Saúl, iniciando un período de persecución durante el cual David demostró su respeto por la autoridad, negándose repetidamente a dañar al "ungido de Jehová".</p><p>Como rey, David unificó las tribus de Israel, conquistó Jerusalén estableciéndola como capital, y extendió las fronteras del reino. Su deseo de construir un templo para Dios, aunque no se le permitió realizarlo personalmente, reveló su profunda devoción.</p><p>El pecado de David con Betsabé y contra Urías (2 Samuel 11-12) representa el punto más oscuro de su vida. Sin embargo, su genuino arrepentimiento (reflejado en el Salmo 51) demuestra por qué Dios lo llamó "un hombre conforme a mi corazón" (Hechos 13:22) - no por su perfección, sino por su disposición a reconocer su pecado y volverse a Dios.</p><p>El legado de David incluye la dinastía que eventualmente produjo al Mesías, así como gran parte del libro de los Salmos, que continúa inspirando la adoración y la oración de creyentes alrededor del mundo.</p>',
+                content: '<p>David, hijo de Isaí de Belén, es una de las figuras más prominentes del Antiguo Testamento...</p>',
                 tags: [
                     { id: 3, name: 'David' }
                 ],
                 fileType: 'text',
+                fileName: null,
+                fileUrl: null,
                 createdAt: '2025-05-10T14:45:00'
             },
             {
                 id: 3,
                 title: 'La gracia en el Nuevo Testamento',
                 description: 'Exploración del concepto teológico de la gracia divina',
-                content: '<p>La gracia (del griego "charis") es uno de los conceptos teológicos fundamentales del Nuevo Testamento, representando el favor inmerecido de Dios hacia la humanidad. A diferencia de la ley del Antiguo Testamento, que establecía condiciones para la aceptación divina, la gracia en el Nuevo Testamento enfatiza la iniciativa divina y el don gratuito.</p><p>El apóstol Pablo es quien más extensamente desarrolla la teología de la gracia. En Romanos 3:24, declara que somos "justificados gratuitamente por su gracia, mediante la redención que es en Cristo Jesús". Esta afirmación fundamental establece que la salvación no puede ser ganada o merecida, sino que es un regalo de Dios.</p><p>En Efesios 2:8-9, Pablo refuerza esta idea: "Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios; no por obras, para que nadie se gloríe". Esta declaración excluye cualquier base para el orgullo humano en la salvación.</p><p>La gracia en el Nuevo Testamento no es simplemente un concepto abstracto sino que está encarnada en la persona de Jesucristo. Juan 1:14 dice que "el Verbo se hizo carne y habitó entre nosotros... lleno de gracia y de verdad". La venida de Cristo es la máxima expresión del favor inmerecido de Dios.</p><p>Además de su papel en la salvación inicial, la gracia también es presentada como el poder para la vida cristiana. Pablo escribe en 2 Corintios 12:9 que la gracia de Dios es suficiente, y que su poder se perfecciona en la debilidad. Esta "gracia capacitadora" sostiene al creyente en las pruebas y lo fortalece para el servicio.</p><p>Contrariamente a algunas interpretaciones, la gracia en el Nuevo Testamento no promueve el libertinaje moral. Como Pablo pregunta en Romanos 6:1-2: "¿Perseveraremos en el pecado para que la gracia abunde? En ninguna manera." La verdadera gracia, aunque no impone requisitos para la salvación, transforma al creyente y lo capacita para vivir en santidad.</p>',
+                content: '<p>La gracia (del griego "charis") es uno de los conceptos teológicos fundamentales del Nuevo Testamento...</p>',
                 tags: [
                     { id: 5, name: 'Gracia' },
                     { id: 6, name: 'Fe' }
                 ],
                 fileType: 'text',
+                fileName: null,
+                fileUrl: null,
                 createdAt: '2025-05-05T09:15:00'
             }
         ];
         
-        // Cargar categorías para filtrar
+        // Cargar categorías de ejemplo
         const categoryFilters = document.getElementById('category-filters');
-        categories.forEach(category => {
+        categoryFilters.innerHTML = '';
+        
+        sampleCategories.forEach(category => {
             const filterOption = document.createElement('div');
             filterOption.className = 'filter-option';
             filterOption.innerHTML = `
@@ -501,9 +586,11 @@
             categoryFilters.appendChild(filterOption);
         });
         
-        // Cargar etiquetas para filtrar
+        // Cargar etiquetas de ejemplo
         const tagFilters = document.getElementById('tag-filters');
-        tags.forEach(tag => {
+        tagFilters.innerHTML = '';
+        
+        sampleTags.forEach(tag => {
             const filterOption = document.createElement('div');
             filterOption.className = 'filter-option';
             filterOption.innerHTML = `
@@ -513,234 +600,307 @@
             tagFilters.appendChild(filterOption);
         });
         
-        // Cargar documentos
-        function renderDocuments(docs = documents) {
-            const resultsContainer = document.getElementById('results');
-            resultsContainer.innerHTML = '';
+        // Agregar eventos a los filtros
+        document.querySelectorAll('#category-filters input, #tag-filters input, #file-type-filters input').forEach(input => {
+            input.addEventListener('change', applyFilters);
+        });
+        
+        // Guardar datos para uso local
+        allDocuments = sampleDocuments;
+        totalDocuments = sampleDocuments.length;
+        
+        // Renderizar documentos
+        renderDocuments(sampleDocuments);
+        
+        // Generar paginación
+        generatePagination(totalDocuments, documentsPerPage, currentPage);
+    }
+    
+    // Renderizar documentos en la página
+    function renderDocuments(docs = []) {
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = '';
+        
+        if (docs.length === 0) {
+            resultsContainer.innerHTML = '<div class="no-results"><h3>No se encontraron resultados</h3><p>Intenta cambiar tus filtros o términos de búsqueda.</p></div>';
+            return;
+        }
+        
+        docs.forEach(doc => {
+            const docElement = document.createElement('div');
+            docElement.className = 'document-card';
             
-            if (docs.length === 0) {
-                resultsContainer.innerHTML = '<div class="no-results"><h3>No se encontraron resultados</h3><p>Intenta cambiar tus filtros o términos de búsqueda.</p></div>';
-                return;
-            }
-            
-            docs.forEach(doc => {
-                const docElement = document.createElement('div');
-                docElement.className = 'document-card';
-                
-                let tagsHtml = '';
+            let tagsHtml = '';
+            if (doc.tags && doc.tags.length > 0) {
                 doc.tags.forEach(tag => {
                     tagsHtml += `<span class="document-tag">${tag.name}</span>`;
                 });
-                
-                docElement.innerHTML = `
-                    <div class="document-card-content">
-                        <h3 class="document-title">${doc.title}</h3>
-                        <p class="document-description">${doc.description}</p>
-                        <div class="document-tags">
-                            ${tagsHtml}
-                        </div>
-                        <button class="document-view-btn" data-id="${doc.id}">Ver documento</button>
+            }
+            
+            docElement.innerHTML = `
+                <div class="document-card-content">
+                    <h3 class="document-title">${doc.title}</h3>
+                    <p class="document-description">${doc.description}</p>
+                    <div class="document-tags">
+                        ${tagsHtml}
                     </div>
-                `;
+                    <button class="document-view-btn" data-id="${doc.id}">Ver documento</button>
+                </div>
+            `;
+            
+            resultsContainer.appendChild(docElement);
+        });
+        
+        // Agregar eventos a los botones de ver documento
+        document.querySelectorAll('.document-view-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const docId = parseInt(this.getAttribute('data-id'));
+                openDocument(docId);
+            });
+        });
+    }
+    
+    // Abrir documento en nueva pestaña
+    function openDocument(docId) {
+        window.open(`ver-documento.html?id=${docId}`, '_blank');
+    }
+    
+    // Búsqueda de documentos
+    document.getElementById('search-btn').addEventListener('click', async function() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+        
+        if (!searchTerm) {
+            // Si no hay término de búsqueda, mostrar todos los documentos
+            currentPage = 1;
+            await loadDocuments();
+            return;
+        }
+        
+        try {
+            // Intentar búsqueda en Supabase (si estamos conectados)
+            const { data, error } = await supabase
+                .from('documents')
+                .select(`
+                    *,
+                    tags (*)
+                `)
+                .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
+                .order('created_at', { ascending: false });
                 
-                resultsContainer.appendChild(docElement);
-            });
+            if (error) throw error;
             
-            // Agregar eventos a los botones de ver documento
-            document.querySelectorAll('.document-view-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const docId = parseInt(this.getAttribute('data-id'));
-                    openDocumentModal(docId);
-                });
-            });
-        }
-        
-        // Inicializar con todos los documentos
-        renderDocuments();
-        
-        // Modal para ver documentos
-        function openDocumentModal(docId) {
-            const doc = documents.find(d => d.id === docId);
-            if (!doc) return;
+            allDocuments = data || [];
+            totalDocuments = allDocuments.length;
+            renderDocuments(allDocuments.slice(0, documentsPerPage));
+            generatePagination(totalDocuments, documentsPerPage, 1);
+            currentPage = 1;
             
-            const modal = document.getElementById('document-modal');
-            const modalTitle = document.getElementById('modal-title');
-            const modalBody = document.getElementById('modal-body');
+        } catch (error) {
+            console.error('Error en la búsqueda:', error);
             
-            modalTitle.textContent = doc.title;
-            modalBody.innerHTML = doc.content;
-            
-            modal.style.display = 'block';
-        }
-        
-        // Cerrar modal
-        document.querySelector('.close-modal').addEventListener('click', function() {
-            document.getElementById('document-modal').style.display = 'none';
-        });
-        
-        // Cerrar modal al hacer clic fuera del contenido
-        window.addEventListener('click', function(e) {
-            const modal = document.getElementById('document-modal');
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-        
-        // Búsqueda de documentos
-        document.getElementById('search-btn').addEventListener('click', function() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            
-            if (!searchTerm) {
-                renderDocuments(); // Si no hay término de búsqueda, mostrar todos
-                return;
-            }
-            
-            const filteredDocs = documents.filter(doc => {
+            // Búsqueda local si hay error con Supabase
+            const filteredDocs = allDocuments.filter(doc => {
                 return doc.title.toLowerCase().includes(searchTerm) ||
                        doc.description.toLowerCase().includes(searchTerm) ||
                        doc.content.toLowerCase().includes(searchTerm);
             });
             
-            renderDocuments(filteredDocs);
+            totalDocuments = filteredDocs.length;
+            renderDocuments(filteredDocs.slice(0, documentsPerPage));
+            generatePagination(totalDocuments, documentsPerPage, 1);
+            currentPage = 1;
+        }
+    });
+    
+    // También permitir búsqueda al presionar Enter
+    document.getElementById('search-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('search-btn').click();
+        }
+    });
+    
+    // Aplicar filtros seleccionados
+    async function applyFilters() {
+        // Obtener filtros seleccionados
+        const selectedTags = [];
+        document.querySelectorAll('#tag-filters input:checked').forEach(input => {
+            selectedTags.push(parseInt(input.value));
         });
         
-        // También permitir búsqueda al presionar Enter
-        document.getElementById('search-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('search-btn').click();
-            }
+        const selectedFileTypes = [];
+        document.querySelectorAll('#file-type-filters input:checked').forEach(input => {
+            selectedFileTypes.push(input.value);
         });
         
-        // Filtrar por categorías, etiquetas y tipos de archivo
-        function applyFilters() {
-            // Obtener filtros seleccionados
-            const selectedCategories = [];
-            document.querySelectorAll('#category-filters input:checked').forEach(input => {
-                selectedCategories.push(parseInt(input.value));
-            });
+        // Si no hay filtros seleccionados, mostrar todos los documentos
+        if (selectedTags.length === 0 && selectedFileTypes.length === 0) {
+            currentPage = 1;
+            await loadDocuments();
+            return;
+        }
+        
+        try {
+            // Aplicar filtros en Supabase
+            let query = supabase
+                .from('documents')
+                .select(`
+                    *,
+                    tags (*)
+                `);
             
-            const selectedTags = [];
-            document.querySelectorAll('#tag-filters input:checked').forEach(input => {
-                selectedTags.push(parseInt(input.value));
-            });
-            
-            const selectedFileTypes = [];
-            document.querySelectorAll('#file-type-filters input:checked').forEach(input => {
-                selectedFileTypes.push(input.value);
-            });
-            
-            // Si no hay filtros seleccionados, mostrar todos los documentos
-            if (selectedCategories.length === 0 && selectedTags.length === 0 && selectedFileTypes.length === 0) {
-                renderDocuments();
-                return;
+            // Filtrar por etiquetas si hay seleccionadas
+            if (selectedTags.length > 0) {
+                // Este es un ejemplo simplificado - en un sistema real necesitarías
+                // una tabla de relación documentos-etiquetas y una consulta más compleja
+                query = query.contains('tags', selectedTags);
             }
             
-            // Aplicar filtros
-            let filteredDocs = documents;
+            // Obtener resultados
+            const { data, error } = await query.order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            let filteredDocs = data || [];
+            
+            // Filtrar por tipo de archivo (si hay seleccionados)
+            if (selectedFileTypes.length > 0) {
+                filteredDocs = filteredDocs.filter(doc => {
+                    return selectedFileTypes.includes(doc.file_type || 'text');
+                });
+            }
+            
+            allDocuments = filteredDocs;
+            totalDocuments = filteredDocs.length;
+            renderDocuments(filteredDocs.slice(0, documentsPerPage));
+            generatePagination(totalDocuments, documentsPerPage, 1);
+            currentPage = 1;
+            
+        } catch (error) {
+            console.error('Error al aplicar filtros:', error);
+            
+            // Filtrado local si hay error con Supabase
+            let filteredDocs = [...allDocuments];
             
             // Filtrar por etiquetas
             if (selectedTags.length > 0) {
                 filteredDocs = filteredDocs.filter(doc => {
-                    return doc.tags.some(tag => selectedTags.includes(tag.id));
+                    return doc.tags && doc.tags.some(tag => selectedTags.includes(tag.id));
                 });
             }
             
             // Filtrar por tipo de archivo
             if (selectedFileTypes.length > 0) {
                 filteredDocs = filteredDocs.filter(doc => {
-                    return selectedFileTypes.includes(doc.fileType);
+                    return selectedFileTypes.includes(doc.fileType || 'text');
                 });
             }
             
-            renderDocuments(filteredDocs);
+            totalDocuments = filteredDocs.length;
+            renderDocuments(filteredDocs.slice(0, documentsPerPage));
+            generatePagination(totalDocuments, documentsPerPage, 1);
+            currentPage = 1;
+        }
+    }
+    
+    // Generar paginación
+    function generatePagination(totalDocs, docsPerPage = 9, currentPage = 1) {
+        const totalPages = Math.ceil(totalDocs / docsPerPage);
+        
+        // Si solo hay una página, no mostrar paginación
+        if (totalPages <= 1) {
+            document.getElementById('pagination').style.display = 'none';
+            return;
         }
         
-        // Agregar evento a todos los filtros
-        document.querySelectorAll('#category-filters input, #tag-filters input, #file-type-filters input').forEach(input => {
-            input.addEventListener('change', applyFilters);
+        document.getElementById('pagination').style.display = 'flex';
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+        
+        // Botón anterior
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'pagination-btn';
+        prevBtn.innerHTML = '&laquo; Anterior';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.addEventListener('click', function() {
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
         });
+        pagination.appendChild(prevBtn);
         
-        // Generar paginación
-        function generatePagination(totalDocs, docsPerPage = 9, currentPage = 1) {
-            const totalPages = Math.ceil(totalDocs / docsPerPage);
-            
-            // Si solo hay una página, no mostrar paginación
-            if (totalPages <= 1) {
-                document.getElementById('pagination').style.display = 'none';
-                return;
-            }
-            
-            document.getElementById('pagination').style.display = 'flex';
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-            
-            // Botón anterior
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'pagination-btn';
-            prevBtn.innerHTML = '&laquo; Anterior';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.addEventListener('click', function() {
-                if (currentPage > 1) {
-                    goToPage(currentPage - 1);
-                }
-            });
-            pagination.appendChild(prevBtn);
-            
-            // Botones de páginas
-            const maxButtons = 5; // Máximo número de botones a mostrar
-            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-            
-            // Ajustar si estamos cerca del final
-            if (endPage - startPage + 1 < maxButtons && startPage > 1) {
-                startPage = Math.max(1, endPage - maxButtons + 1);
-            }
-            
-            for (let i = startPage; i <= endPage; i++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
-                pageBtn.textContent = i;
-                pageBtn.addEventListener('click', function() {
-                    goToPage(i);
-                });
-                pagination.appendChild(pageBtn);
-            }
-            
-            // Botón siguiente
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'pagination-btn';
-            nextBtn.innerHTML = 'Siguiente &raquo;';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.addEventListener('click', function() {
-                if (currentPage < totalPages) {
-                    goToPage(currentPage + 1);
-                }
-            });
-            pagination.appendChild(nextBtn);
+        // Botones de páginas
+        const maxButtons = 5; // Máximo número de botones a mostrar
+        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+        
+        // Ajustar si estamos cerca del final
+        if (endPage - startPage + 1 < maxButtons && startPage > 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
         }
         
-        // Ir a una página específica
-        function goToPage(page) {
-            // Aquí implementarías la lógica para obtener los documentos de la página específica
-            // Por ahora, solo actualizamos la paginación
-            generatePagination(documents.length, 9, page);
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
+            pageBtn.textContent = i;
+            pageBtn.addEventListener('click', function() {
+                goToPage(i);
+            });
+            pagination.appendChild(pageBtn);
+        }
+        
+        // Botón siguiente
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'pagination-btn';
+        nextBtn.innerHTML = 'Siguiente &raquo;';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.addEventListener('click', function() {
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+        pagination.appendChild(nextBtn);
+    }
+    
+    // Ir a una página específica
+    async function goToPage(page) {
+        currentPage = page;
+        
+        try {
+            // Obtener documentos para la página específica
+            const { data: documents, error } = await supabase
+                .from('documents')
+                .select(`
+                    *,
+                    tags (*)
+                `)
+                .order('created_at', { ascending: false })
+                .range((page - 1) * documentsPerPage, page * documentsPerPage - 1);
+                
+            if (error) throw error;
             
-            // Simular carga de documentos de la página actual
-            const start = (page - 1) * 9;
-            const end = start + 9;
-            const pageDocuments = documents.slice(start, end);
+            renderDocuments(documents || []);
+            generatePagination(totalDocuments, documentsPerPage, page);
+            
+            // Hacer scroll hacia arriba
+            window.scrollTo(0, document.querySelector('.page-content').offsetTop - 100);
+            
+        } catch (error) {
+            console.error('Error al cargar página:', error);
+            
+            // Paginación local si hay error con Supabase
+            const startIndex = (page - 1) * documentsPerPage;
+            const endIndex = startIndex + documentsPerPage;
+            const pageDocuments = allDocuments.slice(startIndex, endIndex);
+            
             renderDocuments(pageDocuments);
+            generatePagination(allDocuments.length, documentsPerPage, page);
             
             // Hacer scroll hacia arriba
             window.scrollTo(0, document.querySelector('.page-content').offsetTop - 100);
         }
-        
-        // Inicializar la paginación
-        generatePagination(documents.length);
-        
-        // Cargar la primera página inicialmente
-        goToPage(1);
-    </script>
+    }
+</script>
+
 </body>
 </html>
 

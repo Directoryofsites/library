@@ -380,11 +380,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/scripts.js"></script>
 <script>
-    // Inicializar cliente de Supabase
-    // Reemplaza estos valores con tus credenciales de Supabase
-    const SUPABASE_URL = 'https://tu-proyecto-supabase.supabase.co';
-    const SUPABASE_KEY = 'tu-api-key-publica';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Importar cliente de Supabase desde el archivo de configuración
+const SUPABASE_URL = 'https://cjhbhfvkcwwpnhqixlwd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqaGJoZnZrY3d3cG5ocWl4bHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMTk2MjQsImV4cCI6MjA1Nzg5NTYyNH0.Db6b_riMZXmM09Bfav-iHtJBaSMX31j-eGPgnaAbI80';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // Variables para la paginación
     let currentPage = 1;
@@ -486,13 +485,10 @@
             
             // Obtener documentos para la página actual
             const { data: documents, error } = await supabase
-                .from('documents')
-                .select(`
-                    *,
-                    tags (*)
-                `)
-                .order('created_at', { ascending: false })
-                .range((currentPage - 1) * documentsPerPage, currentPage * documentsPerPage - 1);
+    .from('documents')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .range((currentPage - 1) * documentsPerPage, currentPage * documentsPerPage - 1);
                 
             if (error) throw error;
             
@@ -630,12 +626,8 @@
             const docElement = document.createElement('div');
             docElement.className = 'document-card';
             
-            let tagsHtml = '';
-            if (doc.tags && doc.tags.length > 0) {
-                doc.tags.forEach(tag => {
-                    tagsHtml += `<span class="document-tag">${tag.name}</span>`;
-                });
-            }
+           let tagsHtml = '';
+// Por ahora no mostramos etiquetas
             
             docElement.innerHTML = `
                 <div class="document-card-content">
@@ -678,14 +670,11 @@
         
         try {
             // Intentar búsqueda en Supabase (si estamos conectados)
-            const { data, error } = await supabase
-                .from('documents')
-                .select(`
-                    *,
-                    tags (*)
-                `)
-                .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
-                .order('created_at', { ascending: false });
+           const { data, error } = await supabase
+    .from('documents')
+    .select('*')
+    .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
+    .order('created_at', { ascending: false });
                 
             if (error) throw error;
             
@@ -720,87 +709,168 @@
     });
     
     // Aplicar filtros seleccionados
-    async function applyFilters() {
-        // Obtener filtros seleccionados
-        const selectedTags = [];
-        document.querySelectorAll('#tag-filters input:checked').forEach(input => {
-            selectedTags.push(parseInt(input.value));
-        });
-        
-        const selectedFileTypes = [];
-        document.querySelectorAll('#file-type-filters input:checked').forEach(input => {
-            selectedFileTypes.push(input.value);
-        });
-        
-        // Si no hay filtros seleccionados, mostrar todos los documentos
-        if (selectedTags.length === 0 && selectedFileTypes.length === 0) {
-            currentPage = 1;
-            await loadDocuments();
-            return;
-        }
-        
-        try {
-            // Aplicar filtros en Supabase
-            let query = supabase
-                .from('documents')
-                .select(`
-                    *,
-                    tags (*)
-                `);
-            
-            // Filtrar por etiquetas si hay seleccionadas
-            if (selectedTags.length > 0) {
-                // Este es un ejemplo simplificado - en un sistema real necesitarías
-                // una tabla de relación documentos-etiquetas y una consulta más compleja
-                query = query.contains('tags', selectedTags);
-            }
-            
-            // Obtener resultados
-            const { data, error } = await query.order('created_at', { ascending: false });
-            
-            if (error) throw error;
-            
-            let filteredDocs = data || [];
-            
-            // Filtrar por tipo de archivo (si hay seleccionados)
-            if (selectedFileTypes.length > 0) {
-                filteredDocs = filteredDocs.filter(doc => {
-                    return selectedFileTypes.includes(doc.file_type || 'text');
-                });
-            }
-            
-            allDocuments = filteredDocs;
-            totalDocuments = filteredDocs.length;
-            renderDocuments(filteredDocs.slice(0, documentsPerPage));
-            generatePagination(totalDocuments, documentsPerPage, 1);
-            currentPage = 1;
-            
-        } catch (error) {
-            console.error('Error al aplicar filtros:', error);
-            
-            // Filtrado local si hay error con Supabase
-            let filteredDocs = [...allDocuments];
-            
-            // Filtrar por etiquetas
-            if (selectedTags.length > 0) {
-                filteredDocs = filteredDocs.filter(doc => {
-                    return doc.tags && doc.tags.some(tag => selectedTags.includes(tag.id));
-                });
-            }
-            
-            // Filtrar por tipo de archivo
-            if (selectedFileTypes.length > 0) {
-                filteredDocs = filteredDocs.filter(doc => {
-                    return selectedFileTypes.includes(doc.fileType || 'text');
-                });
-            }
-            
-            totalDocuments = filteredDocs.length;
-            renderDocuments(filteredDocs.slice(0, documentsPerPage));
-            generatePagination(totalDocuments, documentsPerPage, 1);
-            currentPage = 1;
-        }
+async function applyFilters() {
+    // Obtener filtros seleccionados
+    const selectedTags = [];
+    document.querySelectorAll('#tag-filters input:checked').forEach(input => {
+        selectedTags.push(parseInt(input.value));
+    });
+    
+    const selectedFileTypes = [];
+    document.querySelectorAll('#file-type-filters input:checked').forEach(input => {
+        selectedFileTypes.push(input.value);
+    });
+    
+    // Si no hay filtros seleccionados, mostrar todos los documentos
+    if (selectedTags.length === 0 && selectedFileTypes.length === 0) {
+        currentPage = 1;
+        await loadDocuments();
+        return;
     }
+    
+    console.log("Aplicando filtros - etiquetas:", selectedTags, "tipos:", selectedFileTypes);
+    
+    try {
+        // Aplicar filtros en Supabase
+        let query = supabase
+            .from('documents')
+            .select('*')
+            .order('created_at', { ascending: false });
+            
+        // Obtener todos los documentos para filtrar en cliente
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        // Inicializar filteredDocs con todos los documentos
+        let filteredDocs = data || [];
+        console.log("Documentos obtenidos:", filteredDocs.length);
+        
+        // Filtrar por etiquetas en el cliente si hay seleccionadas
+        if (selectedTags.length > 0) {
+            console.log("Filtrando por etiquetas:", selectedTags);
+            
+            filteredDocs = filteredDocs.filter(doc => {
+                // Depuración para ver la estructura del documento
+                console.log(`Documento ID ${doc.id}:`, {
+                    title: doc.title,
+                    tags: doc.tags,
+                    all_tags: doc.all_tags
+                });
+                
+                // Construir array de etiquetas del documento
+                let docTags = [];
+                
+                // Añadir la etiqueta principal
+                if (doc.tags !== null && doc.tags !== undefined) {
+                    docTags.push(Number(doc.tags));
+                }
+                
+                // Añadir etiquetas adicionales si existen
+                if (doc.all_tags) {
+                    if (Array.isArray(doc.all_tags)) {
+                        docTags = [...docTags, ...doc.all_tags.map(t => Number(t))];
+                    } else if (typeof doc.all_tags === 'string') {
+                        try {
+                            const parsed = JSON.parse(doc.all_tags);
+                            if (Array.isArray(parsed)) {
+                                docTags = [...docTags, ...parsed.map(t => Number(t))];
+                            }
+                        } catch (e) {
+                            console.error("Error parsing all_tags:", e);
+                        }
+                    }
+                }
+                
+                // Eliminar duplicados
+                docTags = [...new Set(docTags)];
+                console.log("  - Etiquetas del documento:", docTags);
+                
+                // Para modo AND: documento debe tener todas las etiquetas seleccionadas
+                const matchesAll = selectedTags.every(tagId => {
+                    const result = docTags.includes(tagId);
+                    console.log(`  - Etiqueta ${tagId}: ${result ? 'Presente' : 'Ausente'}`);
+                    return result;
+                });
+                
+                console.log(`  - ¿Pasa filtro AND? ${matchesAll ? 'SÍ' : 'NO'}`);
+                return matchesAll;
+            });
+            
+            console.log(`Después de filtrar por etiquetas: ${filteredDocs.length} documentos`);
+        }
+        
+        // Filtrar por tipo de archivo si hay seleccionados
+        if (selectedFileTypes.length > 0) {
+            console.log("Filtrando por tipos de archivo:", selectedFileTypes);
+            
+            filteredDocs = filteredDocs.filter(doc => {
+                const fileType = doc.file_type || 'text';
+                const result = selectedFileTypes.includes(fileType);
+                console.log(`Documento ID ${doc.id}: tipo ${fileType} - ${result ? 'Aceptado' : 'Rechazado'}`);
+                return result;
+            });
+            
+            console.log(`Después de filtrar por tipo de archivo: ${filteredDocs.length} documentos`);
+        }
+        
+        // Actualizar variables globales y renderizar resultados
+        allDocuments = filteredDocs;
+        totalDocuments = filteredDocs.length;
+        
+        // Mostrar primera página de resultados
+        renderDocuments(filteredDocs.slice(0, documentsPerPage));
+        generatePagination(totalDocuments, documentsPerPage, 1);
+        currentPage = 1;
+        
+    } catch (error) {
+        console.error('Error al aplicar filtros:', error);
+        
+        // Modo de recuperación: filtrar en cliente con los documentos que ya tenemos
+        let filteredDocs = [...allDocuments];
+        console.log("Usando modo de recuperación. Documentos disponibles:", filteredDocs.length);
+        
+        // Filtrar por etiquetas en cliente
+        if (selectedTags.length > 0) {
+            filteredDocs = filteredDocs.filter(doc => {
+                // Manejar diferentes posibles estructuras de etiquetas
+                if (!doc.tags) return false;
+                
+                let tagIds = [];
+                
+                // Si es un array de objetos de etiquetas (modo local/fallback)
+                if (Array.isArray(doc.tags) && doc.tags.length > 0 && typeof doc.tags[0] === 'object') {
+                    tagIds = doc.tags.map(tag => tag.id);
+                } 
+                // Si es un número único
+                else if (typeof doc.tags === 'number') {
+                    tagIds = [doc.tags];
+                }
+                // Si es array de números
+                else if (Array.isArray(doc.tags)) {
+                    tagIds = doc.tags;
+                }
+                
+                // Verificar si todas las etiquetas seleccionadas están en el documento
+                return selectedTags.every(tagId => tagIds.includes(tagId));
+            });
+        }
+        
+        // Filtrar por tipo de archivo
+        if (selectedFileTypes.length > 0) {
+            filteredDocs = filteredDocs.filter(doc => {
+                const fileType = doc.file_type || doc.fileType || 'text';
+                return selectedFileTypes.includes(fileType);
+            });
+        }
+        
+        // Actualizar UI
+        totalDocuments = filteredDocs.length;
+        renderDocuments(filteredDocs.slice(0, documentsPerPage));
+        generatePagination(totalDocuments, documentsPerPage, 1);
+        currentPage = 1;
+    }
+}
     
     // Generar paginación
     function generatePagination(totalDocs, docsPerPage = 9, currentPage = 1) {
@@ -867,14 +937,11 @@
         
         try {
             // Obtener documentos para la página específica
-            const { data: documents, error } = await supabase
-                .from('documents')
-                .select(`
-                    *,
-                    tags (*)
-                `)
-                .order('created_at', { ascending: false })
-                .range((page - 1) * documentsPerPage, page * documentsPerPage - 1);
+           const { data: documents, error } = await supabase
+    .from('documents')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .range((currentPage - 1) * documentsPerPage, currentPage * documentsPerPage - 1);
                 
             if (error) throw error;
             

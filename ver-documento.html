@@ -341,10 +341,9 @@
 <script src="js/scripts.js"></script>
 <script>
     // Inicializar cliente de Supabase
-    // Reemplaza estos valores con tus credenciales de Supabase
-    const SUPABASE_URL = 'https://tu-proyecto-supabase.supabase.co';
-    const SUPABASE_KEY = 'tu-api-key-publica';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_URL = 'https://cjhbhfvkcwwpnhqixlwd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqaGJoZnZrY3d3cG5ocWl4bHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMTk2MjQsImV4cCI6MjA1Nzg5NTYyNH0.Db6b_riMZXmM09Bfav-iHtJBaSMX31j-eGPgnaAbI80';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // Obtener el ID del documento de la URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -355,63 +354,86 @@
         window.location.href = 'consultar.html';
     }
     
-    // Cargar el documento
+    // Función para cargar el documento
     async function loadDocument() {
         try {
+            console.log('Intentando cargar documento con ID:', documentId);
+            
             // Intentar obtener el documento de Supabase
-            const { data: document, error } = await supabase
+            const { data, error } = await supabase
                 .from('documents')
-                .select(`
-                    *,
-                    tags (*)
-                `)
+                .select('*')
                 .eq('id', documentId)
                 .single();
-                
-            if (error) throw error;
+            
+            if (error) {
+                console.error('Error obteniendo documento de Supabase:', error);
+                throw error;
+            }
+            
+            console.log('Documento obtenido:', data);
             
             // Si no se encuentra el documento, redirigir a la página de consulta
-            if (!document) {
+            if (!data) {
                 alert('El documento solicitado no existe.');
                 window.location.href = 'consultar.html';
                 return;
             }
             
             // Cargar los datos del documento en la página
-            document.getElementById('document-title').textContent = document.title;
-            document.getElementById('document-description').textContent = document.description;
-            document.getElementById('document-content').innerHTML = document.content;
+            document.getElementById('document-title').textContent = data.title;
+            document.getElementById('document-description').textContent = data.description;
+            document.getElementById('document-content').innerHTML = data.content;
             
             // Formatear y mostrar la fecha
-            const date = new Date(document.created_at || document.createdAt);
+            const date = new Date(data.created_at);
             document.getElementById('document-date').textContent = date.toLocaleDateString('es-ES', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric'
             });
             
-            // Mostrar las etiquetas
-            const tagsContainer = document.getElementById('document-tags');
-            tagsContainer.innerHTML = '';
-            
-            if (document.tags && document.tags.length > 0) {
-                document.tags.forEach(tag => {
-                    const tagElement = document.createElement('span');
-                    tagElement.className = 'document-tag';
-                    tagElement.textContent = tag.name;
-                    tagsContainer.appendChild(tagElement);
-                });
+            // Si el documento tiene etiquetas
+            if (data.tags && Array.isArray(data.tags) && data.tags.length > 0) {
+                console.log('Documento tiene etiquetas:', data.tags);
+                
+                try {
+                    // Buscar etiquetas por IDs
+                    const { data: tagData, error: tagError } = await supabase
+                        .from('tags')
+                        .select('name')
+                        .in('id', data.tags);
+                    
+                    console.log('Etiquetas obtenidas:', tagData);
+                    
+                    if (tagError) {
+                        console.error('Error al obtener etiquetas:', tagError);
+                    } else if (tagData && tagData.length > 0) {
+                        // Mostrar etiquetas
+                        const tagsContainer = document.getElementById('document-tags');
+                        tagsContainer.innerHTML = '';
+                        
+                        tagData.forEach(tag => {
+                            const tagElement = document.createElement('span');
+                            tagElement.className = 'document-tag';
+                            tagElement.textContent = tag.name;
+                            tagsContainer.appendChild(tagElement);
+                        });
+                    }
+                } catch (tagErr) {
+                    console.error('Error al procesar etiquetas:', tagErr);
+                }
             }
             
-            // Si hay un archivo adjunto, mostrar la sección de adjuntos
-            if (document.file_url || document.fileUrl) {
+            // Si hay un archivo adjunto
+            if (data.file_url) {
                 document.getElementById('file-attachment').style.display = 'block';
-                document.getElementById('file-name').textContent = document.file_name || document.fileName || 'Descargar archivo';
-                document.getElementById('file-link').href = document.file_url || document.fileUrl;
+                document.getElementById('file-name').textContent = data.file_name || 'Descargar archivo';
+                document.getElementById('file-link').href = data.file_url;
                 
                 // Cambiar el icono según el tipo de archivo
                 const fileIcon = document.querySelector('#file-link i');
-                const fileType = document.file_type || document.fileType || 'text';
+                const fileType = data.file_type || 'text';
                 
                 switch (fileType) {
                     case 'pdf':
@@ -432,97 +454,90 @@
             }
             
             // Cambiar el título de la página
-            document.title = `${document.title} - Lumen Logos`;
+            document.title = `${data.title} - Lumen Logos`;
             
         } catch (error) {
             console.error('Error al cargar el documento:', error);
-            
-            // Cargar datos locales si hay error con Supabase
             loadLocalDocument();
         }
     }
     
-    // Cargar documento desde almacenamiento local (para demostración)
+    // Función para cargar datos locales como fallback
     function loadLocalDocument() {
-        // Primero intenta cargar desde localStorage
-        const localDocuments = JSON.parse(localStorage.getItem('lumen_logos_documents') || '[]');
-        let document = localDocuments.find(doc => doc.id === documentId);
+        console.log('Cargando datos locales como fallback');
         
-        // Si no encuentra en localStorage, usar datos de ejemplo
-        if (!document) {
-            const sampleDocuments = [
-                {
-                    id: 1,
-                    title: 'Estudio sobre el Salmo 23',
-                    description: 'Un análisis profundo del Salmo del pastor divino',
-                    content: '<p>El Salmo 23 es quizás uno de los pasajes más conocidos y amados de toda la Escritura. Escrito por el rey David, este hermoso poema utiliza la metáfora del pastor para describir el cuidado de Dios hacia sus hijos.</p><p>En el primer versículo, "Jehová es mi pastor, nada me faltará", David establece inmediatamente la relación íntima con Dios. Como pastor de ovejas en su juventud, David entendía perfectamente lo que significaba este rol protector.</p><p>Los versículos siguientes desarrollan diferentes aspectos del cuidado pastoral de Dios: provisión de descanso y alimento ("En lugares de delicados pastos me hará descansar"), guía espiritual ("Junto a aguas de reposo me pastoreará"), y restauración del alma ("Confortará mi alma").</p><p>La imagen cambia sutilmente en los versículos 4-5, donde David habla del "valle de sombra de muerte" y de la mesa preparada "delante de mis angustiadores". Aquí, Dios es presentado no solo como pastor sino como protector frente a los peligros y enemigos.</p><p>El salmo concluye con la confianza de que "el bien y la misericordia" seguirán al salmista todos los días de su vida, y culmina con la esperanza de habitar en la casa de Jehová "por largos días". Este final apunta hacia una relación eterna con Dios, trascendiendo las preocupaciones temporales.</p>',
-                    tags: [
-                        { id: 1, name: 'Salmos' },
-                        { id: 5, name: 'Gracia' }
-                    ],
-                    fileType: 'text',
-                    fileName: null,
-                    fileUrl: null,
-                    createdAt: '2025-05-15T10:30:00'
-                },
-                {
-                    id: 2,
-                    title: 'La vida del rey David',
-                    description: 'Biografía y legado del rey según el corazón de Dios',
-                    content: '<p>David, hijo de Isaí de Belén, es una de las figuras más prominentes del Antiguo Testamento. Su vida está marcada por extraordinarios contrastes: de pastor humilde a poderoso rey, de guerrero valiente a compositor sensible, de hombre íntegro a pecador arrepentido.</p><p>La primera aparición de David en la narrativa bíblica ocurre cuando el profeta Samuel lo unge como futuro rey de Israel (1 Samuel 16). Aunque era el menor de sus hermanos y aparentemente insignificante, Dios vio en él lo que nadie más podía ver: "Jehová no mira lo que mira el hombre; pues el hombre mira lo que está delante de sus ojos, pero Jehová mira el corazón".</p><p>La victoria de David sobre Goliat (1 Samuel 17) marcó el inicio de su vida pública. Este acto de valentía, motivado por su celo por el honor de Dios, captó la atención del rey Saúl y del pueblo. Sin embargo, la popularidad resultante provocó los celos de Saúl, iniciando un período de persecución durante el cual David demostró su respeto por la autoridad, negándose repetidamente a dañar al "ungido de Jehová".</p><p>Como rey, David unificó las tribus de Israel, conquistó Jerusalén estableciéndola como capital, y extendió las fronteras del reino. Su deseo de construir un templo para Dios, aunque no se le permitió realizarlo personalmente, reveló su profunda devoción.</p><p>El pecado de David con Betsabé y contra Urías (2 Samuel 11-12) representa el punto más oscuro de su vida. Sin embargo, su genuino arrepentimiento (reflejado en el Salmo 51) demuestra por qué Dios lo llamó "un hombre conforme a mi corazón" (Hechos 13:22) - no por su perfección, sino por su disposición a reconocer su pecado y volverse a Dios.</p><p>El legado de David incluye la dinastía que eventualmente produjo al Mesías, así como gran parte del libro de los Salmos, que continúa inspirando la adoración y la oración de creyentes alrededor del mundo.</p>',
-                    tags: [
-                        { id: 3, name: 'David' }
-                    ],
-                    fileType: 'text',
-                    fileName: null,
-                    fileUrl: null,
-                    createdAt: '2025-05-10T14:45:00'
-                },
-                {
-                    id: 3,
-                    title: 'La gracia en el Nuevo Testamento',
-                    description: 'Exploración del concepto teológico de la gracia divina',
-                    content: '<p>La gracia (del griego "charis") es uno de los conceptos teológicos fundamentales del Nuevo Testamento, representando el favor inmerecido de Dios hacia la humanidad. A diferencia de la ley del Antiguo Testamento, que establecía condiciones para la aceptación divina, la gracia en el Nuevo Testamento enfatiza la iniciativa divina y el don gratuito.</p><p>El apóstol Pablo es quien más extensamente desarrolla la teología de la gracia. En Romanos 3:24, declara que somos "justificados gratuitamente por su gracia, mediante la redención que es en Cristo Jesús". Esta afirmación fundamental establece que la salvación no puede ser ganada o merecida, sino que es un regalo de Dios.</p><p>En Efesios 2:8-9, Pablo refuerza esta idea: "Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios; no por obras, para que nadie se gloríe". Esta declaración excluye cualquier base para el orgullo humano en la salvación.</p><p>La gracia en el Nuevo Testamento no es simplemente un concepto abstracto sino que está encarnada en la persona de Jesucristo. Juan 1:14 dice que "el Verbo se hizo carne y habitó entre nosotros... lleno de gracia y de verdad". La venida de Cristo es la máxima expresión del favor inmerecido de Dios.</p><p>Además de su papel en la salvación inicial, la gracia también es presentada como el poder para la vida cristiana. Pablo escribe en 2 Corintios 12:9 que la gracia de Dios es suficiente, y que su poder se perfecciona en la debilidad. Esta "gracia capacitadora" sostiene al creyente en las pruebas y lo fortalece para el servicio.</p><p>Contrariamente a algunas interpretaciones, la gracia en el Nuevo Testamento no promueve el libertinaje moral. Como Pablo pregunta en Romanos 6:1-2: "¿Perseveraremos en el pecado para que la gracia abunde? En ninguna manera." La verdadera gracia, aunque no impone requisitos para la salvación, transforma al creyente y lo capacita para vivir en santidad.</p>',
-                    tags: [
-                        { id: 5, name: 'Gracia' },
-                        { id: 6, name: 'Fe' }
-                    ],
-                    fileType: 'text',
-                    fileName: null,
-                    fileUrl: null,
-                    createdAt: '2025-05-05T09:15:00'
-                }
-            ];
-            
-            document = sampleDocuments.find(doc => doc.id === documentId);
-        }
+        // Datos de ejemplo
+        const sampleDocuments = [
+            {
+                id: 1,
+                title: 'Estudio sobre el Salmo 23',
+                description: 'Un análisis profundo del Salmo del pastor divino',
+                content: '<p>El Salmo 23 es quizás uno de los pasajes más conocidos y amados de toda la Escritura...</p>',
+                tags: [
+                    { id: 1, name: 'Salmos' },
+                    { id: 5, name: 'Gracia' }
+                ],
+                file_type: 'text',
+                file_name: null,
+                file_url: null,
+                created_at: '2025-05-15T10:30:00'
+            },
+            {
+                id: 2,
+                title: 'La vida del rey David',
+                description: 'Biografía y legado del rey según el corazón de Dios',
+                content: '<p>David, hijo de Isaí de Belén, es una de las figuras más prominentes del Antiguo Testamento...</p>',
+                tags: [
+                    { id: 3, name: 'David' }
+                ],
+                file_type: 'text',
+                file_name: null,
+                file_url: null,
+                created_at: '2025-05-10T14:45:00'
+            },
+            {
+                id: 3,
+                title: 'La gracia en el Nuevo Testamento',
+                description: 'Exploración del concepto teológico de la gracia divina',
+                content: '<p>La gracia (del griego "charis") es uno de los conceptos teológicos fundamentales del Nuevo Testamento...</p>',
+                tags: [
+                    { id: 5, name: 'Gracia' },
+                    { id: 6, name: 'Fe' }
+                ],
+                file_type: 'text',
+                file_name: null,
+                file_url: null,
+                created_at: '2025-05-05T09:15:00'
+            }
+        ];
         
-        // Si no se encuentra el documento, redirigir a la página de consulta
-        if (!document) {
+        // Buscar el documento con el ID solicitado
+        const doc = sampleDocuments.find(d => d.id === documentId);
+        
+        if (!doc) {
             alert('El documento solicitado no existe.');
             window.location.href = 'consultar.html';
             return;
         }
         
-        // Cargar los datos del documento en la página
-        document.getElementById('document-title').textContent = document.title;
-        document.getElementById('document-description').textContent = document.description;
-        document.getElementById('document-content').innerHTML = document.content;
+        // Cargar los datos en la página
+        document.getElementById('document-title').textContent = doc.title;
+        document.getElementById('document-description').textContent = doc.description;
+        document.getElementById('document-content').innerHTML = doc.content;
         
-        // Formatear y mostrar la fecha
-        const date = new Date(document.createdAt || document.created_at);
+        const date = new Date(doc.created_at);
         document.getElementById('document-date').textContent = date.toLocaleDateString('es-ES', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
         });
         
-        // Mostrar las etiquetas
-        const tagsContainer = document.getElementById('document-tags');
-        tagsContainer.innerHTML = '';
-        
-        if (document.tags && document.tags.length > 0) {
-            document.tags.forEach(tag => {
+        // Mostrar etiquetas
+        if (doc.tags && doc.tags.length > 0) {
+            const tagsContainer = document.getElementById('document-tags');
+            tagsContainer.innerHTML = '';
+            
+            doc.tags.forEach(tag => {
                 const tagElement = document.createElement('span');
                 tagElement.className = 'document-tag';
                 tagElement.textContent = tag.name;
@@ -530,15 +545,14 @@
             });
         }
         
-        // Si hay un archivo adjunto, mostrar la sección de adjuntos
-        if (document.fileUrl || document.file_url) {
+        // Mostrar archivo adjunto si existe
+        if (doc.file_url) {
             document.getElementById('file-attachment').style.display = 'block';
-            document.getElementById('file-name').textContent = document.fileName || document.file_name || 'Descargar archivo';
-            document.getElementById('file-link').href = document.fileUrl || document.file_url;
+            document.getElementById('file-name').textContent = doc.file_name || 'Descargar archivo';
+            document.getElementById('file-link').href = doc.file_url;
             
-            // Cambiar el icono según el tipo de archivo
             const fileIcon = document.querySelector('#file-link i');
-            const fileType = document.fileType || document.file_type || 'text';
+            const fileType = doc.file_type || 'text';
             
             switch (fileType) {
                 case 'pdf':
@@ -558,8 +572,7 @@
             }
         }
         
-        // Cambiar el título de la página
-        document.title = `${document.title} - Lumen Logos`;
+        document.title = `${doc.title} - Lumen Logos`;
     }
     
     // Cargar el documento cuando la página esté lista

@@ -384,9 +384,11 @@
             <div class="search-container">
                 <div class="search-box">
                     <input type="text" id="search-input" class="search-input" placeholder="Buscar por título, descripción o contenido...">
+
                     <button id="search-btn" class="search-btn">
                         <i class="fas fa-search"></i>
                     </button>
+                    
                 </div>
             </div>
             
@@ -879,18 +881,37 @@ function editDocument(docId) {
 }
     
     // Búsqueda de documentos
-document.getElementById('search-btn').addEventListener('click', async function() {
-    const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
-    
-    if (!searchTerm) {
-        // Si no hay término de búsqueda, usar solo las etiquetas seleccionadas
-        currentPage = 1;
-        await applyFilters();
-        return;
+document.getElementById('search-btn').addEventListener('click', function() {
+    performSearch();
+});
+
+// También permitir búsqueda al presionar Enter
+document.getElementById('search-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        performSearch();
     }
-    
+});
+
+// Función para realizar la búsqueda
+async function performSearch() {
     try {
-        // Intentar búsqueda en Supabase (si estamos conectados)
+        const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+        console.log("Realizando búsqueda con término:", searchTerm);
+        
+        // Si no hay término de búsqueda, usar solo las etiquetas seleccionadas
+        if (!searchTerm && selectedTagIds.length === 0) {
+            currentPage = 1;
+            await loadDocuments();
+            return;
+        }
+        
+        // Si no hay término pero sí hay etiquetas, usar filtro de etiquetas
+        if (!searchTerm && selectedTagIds.length > 0) {
+            await applyFilters();
+            return;
+        }
+        
+        // Realizar búsqueda en Supabase
         const { data, error } = await supabase
             .from('documents')
             .select('*')
@@ -901,12 +922,15 @@ document.getElementById('search-btn').addEventListener('click', async function()
         
         // Guardar resultados para filtrado adicional
         let filteredDocs = data || [];
+        console.log("Resultados de búsqueda:", filteredDocs.length);
         
         // Si hay etiquetas seleccionadas, aplicar filtro adicional
         if (selectedTagIds.length > 0) {
             filteredDocs = filteredDocs.filter(doc => documentHasAllTags(doc, selectedTagIds));
+            console.log("Después de filtrar por etiquetas:", filteredDocs.length);
         }
         
+        // Actualizar resultados
         allDocuments = filteredDocs;
         totalDocuments = filteredDocs.length;
         renderDocuments(filteredDocs.slice(0, documentsPerPage));
@@ -915,34 +939,9 @@ document.getElementById('search-btn').addEventListener('click', async function()
         
     } catch (error) {
         console.error('Error en la búsqueda:', error);
-        
-        // Búsqueda local si hay error con Supabase
-        const filteredDocs = allDocuments.filter(doc => {
-            const matchesSearch = doc.title.toLowerCase().includes(searchTerm) ||
-                   doc.description.toLowerCase().includes(searchTerm) ||
-                   doc.content.toLowerCase().includes(searchTerm);
-            
-            // Si hay etiquetas seleccionadas, verificar que el documento tenga todas
-            if (selectedTagIds.length > 0) {
-                return matchesSearch && documentHasAllTags(doc, selectedTagIds);
-            }
-            
-            return matchesSearch;
-        });
-        
-        totalDocuments = filteredDocs.length;
-        renderDocuments(filteredDocs.slice(0, documentsPerPage));
-        generatePagination(totalDocuments, documentsPerPage, 1);
-        currentPage = 1;
+        alert("Ocurrió un error al realizar la búsqueda. Por favor, intente de nuevo.");
     }
-});
-    
-    // También permitir búsqueda al presionar Enter
-    document.getElementById('search-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            document.getElementById('search-btn').click();
-        }
-    });
+}
     
     // Aplicar filtros seleccionados
 

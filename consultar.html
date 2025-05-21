@@ -1103,35 +1103,64 @@ async function applyFilters() {
 // Manejo de autenticación
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar si el usuario ya está logueado 
-    checkLoginStatus();
+    const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
     
-    // Manejar click en botón de login
-    document.getElementById('login-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        document.getElementById('login-modal').style.display = 'block';
-    });
+    // Actualizar texto del botón según estado
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        loginBtn.textContent = isLoggedIn ? 'Cerrar Sesión' : 'Logearse';
+        
+        // Configurar el evento de clic
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (isLoggedIn) {
+                // Si está logueado, cerrar sesión
+                logout();
+            } else {
+                // Si no está logueado, mostrar modal
+                const loginModal = document.getElementById('login-modal');
+                if (loginModal) {
+                    loginModal.style.display = 'block';
+                }
+            }
+        });
+    }
     
     // Cerrar modal al hacer clic en X
-    document.querySelector('.close-modal').addEventListener('click', function() {
-        document.getElementById('login-modal').style.display = 'none';
-    });
+    const closeModalBtn = document.querySelector('.close-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', function() {
+            const loginModal = document.getElementById('login-modal');
+            if (loginModal) {
+                loginModal.style.display = 'none';
+            }
+        });
+    }
     
     // Cerrar modal al hacer clic fuera del contenido
     window.addEventListener('click', function(e) {
-        if (e.target == document.getElementById('login-modal')) {
-            document.getElementById('login-modal').style.display = 'none';
+        const loginModal = document.getElementById('login-modal');
+        if (loginModal && e.target == loginModal) {
+            loginModal.style.display = 'none';
         }
     });
     
     // Manejar submit del formulario de login
-    document.getElementById('submit-login').addEventListener('click', handleLogin);
+    const submitLoginBtn = document.getElementById('submit-login');
+    if (submitLoginBtn) {
+        submitLoginBtn.addEventListener('click', handleLogin);
+    }
     
     // También permitir login con la tecla Enter
-    document.getElementById('admin-password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
+    const adminPasswordInput = document.getElementById('admin-password');
+    if (adminPasswordInput) {
+        adminPasswordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevenir el envío del formulario
+                handleLogin();
+            }
+        });
+    }
 });
 
 // Verificar estado de login
@@ -1139,18 +1168,10 @@ function checkLoginStatus() {
     const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
     
     // Actualizar texto del botón según estado
-    document.getElementById('login-btn').textContent = isLoggedIn ? 'Cerrar Sesión' : 'Logearse';
-    
-    // Si está logueado, cambiar comportamiento del botón para cerrar sesión
-if (isLoggedIn) {
-    document.getElementById('login-btn').removeEventListener('click', null);
-    document.getElementById('login-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        logout();
-    });
-} else {
-    // El usuario no está logueado
-}
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        loginBtn.textContent = isLoggedIn ? 'Cerrar Sesión' : 'Logearse';
+    }
     
     // Recargar documentos para actualizar UI
     if (window.location.pathname.includes('consultar.html')) {
@@ -1189,6 +1210,21 @@ function logout() {
 }
 
 </script>
+
+<!-- Modal de Login -->
+<div id="login-modal" class="login-modal">
+    <div class="login-content">
+        <span class="close-modal">&times;</span>
+        <h2>Acceso Administrativo</h2>
+        <div class="login-form">
+            <form>
+                <input type="password" id="admin-password" placeholder="Contraseña">
+                <button type="button" id="submit-login">Ingresar</button>
+            </form>
+        </div>
+        <div id="login-error" class="login-error"></div>
+    </div>
+</div>
 
 </body>
 </html>

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Documento - Lumen Logos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 0 5px 5px 0;
+            background-color: #e6b742;
+            color: #2a3855;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="main-header">
+                <div class="logo">
+                    <img src="images/logo1.png" alt="Lumen Logos">
+                    <div class="logo-text">
+                        <h1>Lumen Logos</h1>
+                        <p>La Luz del Verbo</p>
+                    </div>
+                </div>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Principal</a></li>
+                        <li><a href="consultar.html">Consultar</a></li>
+                        <li><a href="alimentar.html">Alimentar</a></li>
+                        <li><a href="#" id="login-btn">Logearse</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="page-content" style="margin-top: 150px; padding: 50px 0;">
+        <div class="container">
+            <h2 class="text-center mb-5">Editar Documento</h2>
+            
+            <!-- Password Protection -->
+            <div id="password-section" class="text-center">
+                <p>Para editar este documento, por favor ingrese la contraseña:</p>
+                <form id="password-form" style="max-width: 400px; margin: 0 auto;">
+                    <div class="form-group">
+                        <input type="password" id="access-password" class="form-control" placeholder="Contraseña de acceso" autocomplete="new-password">
+                        <button type="submit" id="validate-password" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Acceder</button>
+                        <p id="password-error" style="color: red; margin-top: 10px; display: none;">Contraseña incorrecta. Por favor intente de nuevo.</p>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Edit Form (hidden by default) -->
+            <div id="edit-form" class="form-container" style="display: none;">
+                <form id="document-form">
+                    <div class="form-group">
+                        <label for="title" style="display: block; margin-bottom: 5px; font-weight: 600;">Título*</label>
+                        <input type="text" id="title" name="title" required class="form-control" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description" style="display: block; margin-bottom: 5px; font-weight: 600;">Descripción*</label>
+                        <textarea id="description" name="description" rows="3" required class="form-control" readonly></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Etiquetas</label>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label>Categorías existentes:</label>
+                            <select id="category-select" class="form-control">
+                                <option value="">Seleccionar categoría</option>
+                                <!-- Las categorías se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label>Etiquetas de la categoría:</label>
+                            <select id="tag-select" class="form-control" multiple>
+                                <!-- Las etiquetas se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label>Etiquetas actuales:</label>
+                            <div id="selected-tags" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 50px;">
+                                <!-- Las etiquetas seleccionadas se mostrarán aquí -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group text-center" style="margin-top: 30px;">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        <a href="javascript:history.back()" class="btn btn-secondary" style="margin-left: 10px;">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Loading indicator -->
+            <div id="loading" class="text-center" style="display: none;">
+                <p>Cargando documento...</p>
+            </div>
+            
+            <!-- Error message -->
+            <div id="error-message" class="text-center" style="display: none; color: red;">
+                <p>Error al cargar el documento. Por favor intente de nuevo.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2025 Lumen Logos. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/scripts.js"></script>
+<script src="js/tag-handler.js"></script>
+<script>
+    // Asegurarse de que las funciones de tag-handler estén disponibles globalmente
+    if (typeof getDocumentTags !== 'function') {
+        console.error("La función getDocumentTags no está disponible. Asegúrate de que tag-handler.js se cargó correctamente.");
+    }
+
+    // Script de inicialización básica (no module)
+console.log("Script de inicialización básica cargado");
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM completamente cargado");
+    
+    // Verificar si el usuario ya está logueado
+    if (localStorage.getItem('isAdmin') === 'true') {
+        console.log("Usuario ya está logueado, iniciando editor directamente");
+        document.getElementById('password-section').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+        // Iniciar la carga del documento usando el módulo Supabase
+        initializeEditorWithSupabase();
+    } else {
+        console.log("Usuario no logueado, mostrando formulario de contraseña");
+        // Configurar formulario de contraseña
+        const passwordForm = document.getElementById('password-form');
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', handlePasswordSubmit);
+            console.log("Evento submit agregado al formulario de contraseña");
+        } else {
+            console.error("Formulario de contraseña no encontrado");
+        }
+    }
+    
+    // Agregar manejador para el botón de login/logout en el menú
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (localStorage.getItem('isAdmin') === 'true') {
+                // Si está logueado, cerrar sesión
+                localStorage.removeItem('isAdmin');
+                window.location.href = 'index.html'; // Redirigir al inicio después de cerrar sesión
+            } else {
+                // Si no está logueado, mostrar modal de login
+                alert('Por favor ingrese la contraseña para acceder a funciones administrativas.');
+            }
+        });
+        
+        // Actualizar texto del botón según estado
+        loginBtn.textContent = localStorage.getItem('isAdmin') === 'true' ? 'Cerrar Sesión' : 'Logearse';
+    }
+});
+
+    // Función para manejar la contraseña (no module)
+function handlePasswordSubmit(event) {
+    event.preventDefault();
+    console.log("Formulario de contraseña enviado");
+    
+    const password = document.getElementById('access-password').value;
+    console.log("Contraseña introducida:", password);
+    
+    if (password === 'admin811880') {
+        console.log("Contraseña correcta");
+        // Guardar estado en localStorage
+        localStorage.setItem('isAdmin', 'true');
+        
+        document.getElementById('password-section').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+        
+        // Iniciar la carga del documento usando el módulo Supabase
+        initializeEditorWithSupabase();
+    } else {
+        console.log("Contraseña incorrecta");
+        document.getElementById('password-error').style.display = 'block';
+    }
+}
+</script>
+
+<!-- Script con módulo de Supabase -->
+<script type="module">
+    // Variables para almacenar datos
+let supabase;
+let SUPABASE_URL;
+let documentData = null;
+const documentId = (new URLSearchParams(window.location.search)).get('id');
+
+// Función para verificar la estructura de la tabla documents
+async function checkTableStructure() {
+    try {
+        console.log("Verificando estructura de la tabla...");
+        // Primero intentamos obtener un documento para ver su estructura
+        const { data: sampleDoc, error } = await supabase
+            .from('documents')
+            .select('*')
+            .limit(1)
+            .single();
+        
+        if (error) throw error;
+        
+        console.log("Estructura de documento de muestra:", sampleDoc);
+        console.log("Propiedades:", Object.keys(sampleDoc));
+        console.log("¿Tiene tags_array?", 'tags_array' in sampleDoc);
+        console.log("¿Tiene all_tags?", 'all_tags' in sampleDoc);
+        console.log("Tipo de tags:", typeof sampleDoc.tags);
+        
+        return {
+            hasTagsArray: 'tags_array' in sampleDoc,
+            hasAllTags: 'all_tags' in sampleDoc,
+            tagsType: typeof sampleDoc.tags
+        };
+    } catch (error) {
+        console.error("Error al verificar estructura:", error);
+        return {
+            hasTagsArray: false,
+            hasAllTags: false,
+            tagsType: 'unknown'
+        };
+    }
+}
+    
+   // Función para inicializar la página después de validar la contraseña
+window.initializeEditorWithSupabase = async function() {
+    console.log("Inicializando editor con Supabase");
+    
+    try {
+        // Importar Supabase
+        const module = await import('./js/supabase-config.js');
+        supabase = module.supabase;
+        SUPABASE_URL = module.SUPABASE_URL;
+        
+        console.log("Supabase importado correctamente:", !!supabase);
+        
+        // Verificar ID de documento
+        if (!documentId || isNaN(parseInt(documentId))) {
+            showError('ID de documento inválido.');
+            return;
+        }
+        
+        // Verificar estructura de la tabla
+        const tableStructure = await checkTableStructure();
+        console.log("Estructura de la tabla:", tableStructure);
+        
+        // Guardar la estructura para usar más tarde
+        window.tableStructure = tableStructure;
+        
+        // Cargar datos
+        await loadDocument();
+        await loadCategoriesAndTags();
+        
+    } catch (error) {
+        console.error("Error al inicializar Supabase:", error);
+        showError('Error al inicializar el editor: ' + error.message);
+    }
+};
+    
+    // Cargar el documento desde Supabase
+    async function loadDocument() {
+        try {
+            console.log("Cargando documento ID:", documentId);
+            
+            const { data, error } = await supabase
+                .from('documents')
+                .select('*')
+                .eq('id', documentId)
+                .single();
+                
+            if (error) throw error;
+            if (!data) throw new Error('Documento no encontrado');
+            
+            console.log("Documento cargado:", data);
+            documentData = data;
+            
+            // Llenar el formulario con los datos del documento
+            document.getElementById('title').value = data.title || '';
+            document.getElementById('description').value = data.description || '';
+            
+            // Mostrar las etiquetas actuales
+            displayCurrentTags();
+            
+            // Ocultar carga y mostrar formulario
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('edit-form').style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error al cargar documento:', error);
+            showError('Error al cargar el documento: ' + error.message);
+        }
+    }
+    
+    // Mostrar las etiquetas actuales del documento
+    function displayCurrentTags() {
+        console.log("Mostrando etiquetas actuales");
+        const selectedTagsContainer = document.getElementById('selected-tags');
+        selectedTagsContainer.innerHTML = '';
+        
+        // Verificar que getDocumentTags esté disponible
+        if (typeof window.getDocumentTags !== 'function') {
+            console.error("getDocumentTags no está disponible");
+            selectedTagsContainer.innerHTML = '<p>Error al cargar etiquetas</p>';
+            return;
+        }
+        
+        // Obtener las etiquetas del documento
+        const docTags = window.getDocumentTags(documentData);
+        console.log("Etiquetas encontradas:", docTags);
+        
+        if (!docTags || docTags.length === 0) {
+            selectedTagsContainer.innerHTML = '<p>No hay etiquetas asignadas a este documento.</p>';
+            return;
+        }
+        
+        // Crear elementos para cada etiqueta
+        docTags.forEach(tagId => {
+            const tagElement = document.createElement('span');
+            tagElement.classList.add('tag');
+            tagElement.dataset.id = tagId;
+            tagElement.textContent = `Etiqueta ${tagId}`;
+            
+            const removeBtn = document.createElement('span');
+            removeBtn.innerHTML = '&times;';
+            removeBtn.style.marginLeft = '5px';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.addEventListener('click', function() {
+                tagElement.remove();
+                
+                // Si no quedan etiquetas, mostrar mensaje
+                if (selectedTagsContainer.querySelectorAll('.tag').length === 0) {
+                    selectedTagsContainer.innerHTML = '<p>No hay etiquetas asignadas a este documento.</p>';
+                }
+            });
+            
+            tagElement.appendChild(removeBtn);
+            selectedTagsContainer.appendChild(tagElement);
+        });
+    }
+    
+    // Cargar categorías y etiquetas
+    async function loadCategoriesAndTags() {
+        try {
+            console.log("Cargando categorías y etiquetas");
+            
+            // Cargar categorías
+            const { data: categories, error: categoriesError } = await supabase
+                .from('categories')
+                .select('*')
+                .order('name');
+                
+            if (categoriesError) throw categoriesError;
+            
+            console.log("Categorías cargadas:", categories);
+            
+            const categorySelect = document.getElementById('category-select');
+            categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            });
+            
+            // Agregar evento de cambio para cargar etiquetas de la categoría seleccionada
+            categorySelect.addEventListener('change', loadTagsForCategory);
+            
+            // También cargamos todas las etiquetas para actualizar los nombres en las etiquetas actuales
+            const { data: allTags, error: allTagsError } = await supabase
+                .from('tags')
+                .select('*')
+                .order('name');
+                
+            if (allTagsError) throw allTagsError;
+            
+            console.log("Todas las etiquetas cargadas:", allTags);
+            
+            if (allTags && allTags.length > 0) {
+                // Crear un mapa de ID de etiqueta -> nombre de etiqueta
+                const tagsMap = {};
+                allTags.forEach(tag => {
+                    tagsMap[tag.id] = tag.name;
+                });
+                
+                // Actualizar los nombres de las etiquetas actuales
+                document.querySelectorAll('#selected-tags .tag').forEach(tagEl => {
+                    const tagId = tagEl.dataset.id;
+                    if (tagsMap[tagId]) {
+                        // Mantener solo el texto (sin el botón de cerrar)
+                        const closeBtn = tagEl.querySelector('span');
+                        tagEl.textContent = tagsMap[tagId];
+                        if (closeBtn) {
+                            tagEl.appendChild(closeBtn);
+                        }
+                    }
+                });
+            }
+            
+        } catch (error) {
+            console.error('Error al cargar categorías:', error);
+            showError('Error al cargar categorías: ' + error.message);
+        }
+    }
+    
+    // Cargar etiquetas para la categoría seleccionada
+    async function loadTagsForCategory() {
+        const categoryId = parseInt(this.value);
+        const tagSelect = document.getElementById('tag-select');
+        tagSelect.innerHTML = '';
+        
+        if (!categoryId) return;
+        
+        try {
+            console.log("Cargando etiquetas para categoría:", categoryId);
+            
+            // Cargar etiquetas de la categoría seleccionada
+            const { data: tags, error } = await supabase
+                .from('tags')
+                .select('*')
+                .eq('category_id', categoryId)
+                .order('name');
+                
+            if (error) throw error;
+            
+            console.log("Etiquetas de categoría cargadas:", tags);
+            
+            if (tags && tags.length > 0) {
+                tags.forEach(tag => {
+                    const option = document.createElement('option');
+                    option.value = tag.id;
+                    option.textContent = tag.name;
+                    tagSelect.appendChild(option);
+                });
+                
+                // Habilitar la selección de etiquetas
+                tagSelect.addEventListener('change', selectTag);
+            }
+        } catch (error) {
+            console.error('Error al cargar etiquetas:', error);
+        }
+    }
+    
+    // Seleccionar una etiqueta y agregarla a las seleccionadas
+    function selectTag() {
+        const selectedOptions = Array.from(this.selectedOptions);
+        const selectedTagsContainer = document.getElementById('selected-tags');
+        
+        // Obtener los IDs de las etiquetas ya agregadas
+        const existingTagIds = Array.from(selectedTagsContainer.querySelectorAll('.tag'))
+            .map(tag => tag.dataset.id);
+        
+        // Limpiar mensaje de "No hay etiquetas" si existe
+        if (selectedTagsContainer.querySelector('p')) {
+            selectedTagsContainer.innerHTML = '';
+        }
+        
+        // Añadir solo las etiquetas recién seleccionadas (no las que ya están)
+        selectedOptions.forEach(option => {
+            // Si esta etiqueta ya está agregada, ignorarla
+            if (existingTagIds.includes(option.value)) {
+                return;
+            }
+            
+            const tagElement = document.createElement('span');
+            tagElement.classList.add('tag');
+            tagElement.dataset.id = option.value;
+            tagElement.textContent = option.textContent;
+            
+            const removeBtn = document.createElement('span');
+            removeBtn.innerHTML = '&times;';
+            removeBtn.style.marginLeft = '5px';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.addEventListener('click', function() {
+                tagElement.remove();
+                option.selected = false;
+                
+                // Si no quedan etiquetas, mostrar mensaje
+                if (selectedTagsContainer.querySelectorAll('.tag').length === 0) {
+                    selectedTagsContainer.innerHTML = '<p>No hay etiquetas asignadas a este documento.</p>';
+                }
+            });
+            
+            tagElement.appendChild(removeBtn);
+            selectedTagsContainer.appendChild(tagElement);
+        });
+        
+        // Limpiar la selección actual
+        this.selectedIndex = -1;
+    }
+    
+    // Función auxiliar para obtener todas las etiquetas seleccionadas al enviar el formulario
+    function getSelectedTagIds() {
+        return Array.from(document.querySelectorAll('#selected-tags .tag'))
+            .map(tag => parseInt(tag.dataset.id))
+            .filter(id => !isNaN(id));
+    }
+    
+    // Configurar el evento para el formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const documentForm = document.getElementById('document-form');
+        if (documentForm) {
+            documentForm.addEventListener('submit', saveDocumentChanges);
+            console.log("Evento submit agregado al formulario de documento");
+        }
+    });
+    
+    // Manejar envío del formulario para guardar cambios
+async function saveDocumentChanges(e) {
+    e.preventDefault();
+    console.log("Guardando cambios en el documento");
+    
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Guardando...';
+    
+    // Obtener las etiquetas seleccionadas
+    const tagIds = getSelectedTagIds();
+    console.log("Etiquetas seleccionadas para guardar:", tagIds);
+    
+    try {
+        console.log("Actualizando documento ID:", documentId);
+        console.log("Nuevas etiquetas:", tagIds);
+        
+        // Actualizar primero el tag principal para compatibilidad
+        const { error: tagError } = await supabase
+            .from('documents')
+            .update({ tags: tagIds.length > 0 ? tagIds[0] : null })
+            .eq('id', documentId);
+            
+        if (tagError) throw tagError;
+        
+        // Usar la función RPC para actualizar el array de etiquetas
+        const { data: rpcResult, error: rpcError } = await supabase
+            .rpc('update_document_tags', { 
+                doc_id: documentId, 
+                new_tags: tagIds 
+            });
+            
+        if (rpcError) throw rpcError;
+        
+        console.log("Resultado de actualización RPC:", rpcResult);
+        
+        // Verificar que se guardó correctamente
+        const { data: verifyDoc, error: verifyError } = await supabase
+            .from('documents')
+            .select('*')
+            .eq('id', documentId)
+            .single();
+            
+        if (verifyError) throw verifyError;
+        console.log("Documento verificado después de actualizar:", verifyDoc);
+        
+        // Mostrar mensaje de éxito y redirigir
+        alert('Cambios guardados correctamente');
+        window.location.href = `ver-documento.html?id=${documentId}`;
+        
+    } catch (error) {
+        console.error('Error al guardar cambios:', error);
+        alert('Error al guardar cambios: ' + error.message);
+        
+        // Habilitar nuevamente el botón de envío
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+    }
+}
+    
+    // Mostrar mensaje de error
+    function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('password-section').style.display = 'none';
+        
+        const errorElement = document.getElementById('error-message');
+        errorElement.innerHTML = `<p>${message}</p>`;
+        errorElement.style.display = 'block';
+        
+        console.error("Error mostrado al usuario:", message);
+    }
+    
+    // Exponer showError globalmente
+    window.showError = showError;
+</script>
+
+<!-- Modal de Login -->
+<div id="login-modal" class="login-modal">
+    <div class="login-content">
+        <span class="close-modal">&times;</span>
+        <h2>Acceso Administrativo</h2>
+        <div class="login-form">
+            <input type="password" id="admin-password" placeholder="Contraseña">
+            <button id="submit-login">Ingresar</button>
+        </div>
+        <div id="login-error" class="login-error"></div>
+    </div>
+</div>
+
+<style>
+/* Estilos Modal Login */
+.login-modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.login-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: black;
+}
+
+.login-form {
+    margin-top: 20px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-form button:hover {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.login-error {
+    color: #d9534f;
+    margin-top: 10px;
+    text-align: center;
+}
+</style>
+
+<script>
+// Manejo de modal de login
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar click en botón de login
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
+            
+            if (isLoggedIn) {
+                // Si está logueado, cerrar sesión
+                localStorage.removeItem('isAdmin');
+                // Actualizar interfaz
+                this.textContent = 'Logearse';
+                // Redirigir a la página principal
+                window.location.href = 'index.html';
+            } else {
+                // Si no está logueado, mostrar modal de login
+                document.getElementById('login-modal').style.display = 'block';
+            }
+        });
+    }
+    
+    // Cerrar modal al hacer clic en X
+    const closeModal = document.querySelector('.close-modal');
+    if (closeModal) {
+        closeModal.addEventListener('click', function() {
+            document.getElementById('login-modal').style.display = 'none';
+        });
+    }
+    
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('login-modal');
+        if (e.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Manejar submit del formulario de login
+    const submitLogin = document.getElementById('submit-login');
+    if (submitLogin) {
+        submitLogin.addEventListener('click', handleLoginSubmit);
+    }
+    
+    // También permitir login con la tecla Enter
+    const adminPassword = document.getElementById('admin-password');
+    if (adminPassword) {
+        adminPassword.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleLoginSubmit();
+            }
+        });
+    }
+});
+
+// Función para manejar el inicio de sesión
+function handleLoginSubmit() {
+    const password = document.getElementById('admin-password').value;
+    const errorElement = document.getElementById('login-error');
+    
+    // Verificar contraseña
+    if (password === 'admin811880') {
+        // Guardar estado en localStorage
+        localStorage.setItem('isAdmin', 'true');
+        
+        // Cerrar modal
+        document.getElementById('login-modal').style.display = 'none';
+        
+        // Limpiar campo de contraseña
+        document.getElementById('admin-password').value = '';
+        
+        // Actualizar UI
+        document.getElementById('login-btn').textContent = 'Cerrar Sesión';
+        errorElement.textContent = '';
+        
+        // Si estamos en la página de edición, mostrar el formulario y ocultar la sección de contraseña
+        document.getElementById('password-section').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+        // Iniciar la carga del documento usando el módulo Supabase
+        if (typeof initializeEditorWithSupabase === 'function') {
+            initializeEditorWithSupabase();
+        }
+    } else {
+        errorElement.textContent = 'Contraseña incorrecta';
+    }
+}
+</script>
+
+</body>
+</html>

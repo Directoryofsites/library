@@ -6,6 +6,8 @@
     <title>Consultar - Lumen Logos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -177,6 +179,145 @@
             padding: 50px;
             color: var(--tertiary-color);
         }
+
+ /* Estilos Modal Login */
+.login-modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.login-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: black;
+}
+
+.login-form {
+    margin-top: 20px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-form button:hover {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.login-error {
+    color: #d9534f;
+    margin-top: 10px;
+    text-align: center;
+}
+
+
+.filter-selector {
+    margin-bottom: 15px;
+}
+
+.selector-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.category-select, .tag-select {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    color: var(--primary-color);
+}
+
+.add-tag-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.add-tag-btn:hover {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.add-tag-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    color: #666;
+}
+
+.selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.tag-item {
+    display: flex;
+    align-items: center;
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.tag-remove {
+    margin-left: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.tag-remove:hover {
+    color: #d9534f;
+}
+
     </style>
 </head>
 <body>
@@ -227,6 +368,7 @@
                             </ul>
                         </li>
                         <li><a href="contact.html">Contacto</a></li>
+                        <li><a href="#" id="login-btn">Logearse</a></li>
                     </ul>
                 </nav>
             </div>
@@ -248,48 +390,30 @@
                 </div>
             </div>
             
-            <!-- Filters -->
-            <div class="filter-container">
-                <div class="filter-box">
-                    <div class="filter-title">Categorías</div>
-                    <div class="filter-options" id="category-filters">
-                        <!-- Categorías se cargarán dinámicamente -->
-                    </div>
-                </div>
-                
-                <div class="filter-box">
-                    <div class="filter-title">Etiquetas populares</div>
-                    <div class="filter-options" id="tag-filters">
-                        <!-- Etiquetas se cargarán dinámicamente -->
-                    </div>
-                </div>
-                
-                <div class="filter-box">
-                    <div class="filter-title">Tipo de archivo</div>
-                    <div class="filter-options" id="file-type-filters">
-                        <div class="filter-option">
-                            <input type="checkbox" id="filter-text" value="text">
-                            <label for="filter-text">Texto</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="filter-pdf" value="pdf">
-                            <label for="filter-pdf">PDF</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="filter-audio" value="audio">
-                            <label for="filter-audio">Audio</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="filter-video" value="video">
-                            <label for="filter-video">Video</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="filter-image" value="image">
-                            <label for="filter-image">Imagen</label>
-                        </div>
-                    </div>
-                </div>
+           <!-- Filters -->
+<div class="filter-container">
+    <div class="filter-box">
+        <div class="filter-title">Filtrar por categoría y etiqueta</div>
+        <div class="filter-selector">
+            <div class="selector-group">
+                <select id="category-dropdown" class="category-select">
+                    <option value="">Selecciona una categoría</option>
+                    <!-- Categorías se cargarán dinámicamente -->
+                </select>
+                <select id="tag-dropdown" class="tag-select" disabled>
+                    <option value="">Selecciona una etiqueta</option>
+                    <!-- Etiquetas se cargarán dinámicamente según la categoría -->
+                </select>
+                <button id="add-tag-btn" class="add-tag-btn" disabled>
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
             </div>
+        </div>
+        <div id="selected-tags" class="selected-tags">
+            <!-- Aquí se mostrarán las etiquetas seleccionadas -->
+        </div>
+    </div>
+</div>
             
             <!-- Results -->
             <div class="results-container" id="results">
@@ -376,6 +500,7 @@
         </div>
     </footer>
 
+    <script src="js/tag-handler.js"></script>
     <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/scripts.js"></script>
@@ -390,6 +515,9 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let totalDocuments = 0;
     let documentsPerPage = 9;
     let allDocuments = [];
+
+    // Verificar estado de login al cargar la página
+const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
     
     // Cargar datos al iniciar la página
     document.addEventListener('DOMContentLoaded', async function() {
@@ -402,74 +530,153 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             loadSampleData();
         }
     });
+
+    // Agregar evento al botón de agregar etiqueta
+document.getElementById('add-tag-btn').addEventListener('click', addTagToSelection);
     
-    // Cargar categorías desde Supabase
-    async function loadCategories() {
-        try {
-            const { data: categories, error } = await supabase
-                .from('categories')
-                .select('*')
-                .order('name');
-                
-            if (error) throw error;
+    // Variables para almacenar categorías y etiquetas
+let allCategories = [];
+let allTags = [];
+let selectedTagIds = [];
+
+// Cargar categorías desde Supabase
+async function loadCategories() {
+    try {
+        const { data: categories, error } = await supabase
+            .from('categories')
+            .select('*')
+            .order('name');
             
-            const categoryFilters = document.getElementById('category-filters');
-            categoryFilters.innerHTML = '';
+        if (error) throw error;
+        
+        allCategories = categories || [];
+        
+        const categoryDropdown = document.getElementById('category-dropdown');
+        categoryDropdown.innerHTML = '<option value="">Selecciona una categoría</option>';
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            categoryDropdown.appendChild(option);
+        });
+        
+        // Agregar evento de cambio
+        categoryDropdown.addEventListener('change', handleCategoryChange);
+        
+    } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        throw error;
+    }
+}
+
+// Cargar etiquetas desde Supabase
+async function loadTags() {
+    try {
+        const { data: tags, error } = await supabase
+            .from('tags')
+            .select('*')
+            .order('name');
             
-            categories.forEach(category => {
-                const filterOption = document.createElement('div');
-                filterOption.className = 'filter-option';
-                filterOption.innerHTML = `
-                    <input type="checkbox" id="category-${category.id}" value="${category.id}">
-                    <label for="category-${category.id}">${category.name}</label>
-                `;
-                categoryFilters.appendChild(filterOption);
-            });
-            
-            // Agregar eventos a los filtros
-            document.querySelectorAll('#category-filters input').forEach(input => {
-                input.addEventListener('change', applyFilters);
-            });
-            
-        } catch (error) {
-            console.error('Error al cargar categorías:', error);
-            throw error;
-        }
+        if (error) throw error;
+        
+        allTags = tags || [];
+        
+    } catch (error) {
+        console.error('Error al cargar etiquetas:', error);
+        throw error;
+    }
+}
+
+// Manejar cambio de categoría
+function handleCategoryChange() {
+    const categoryId = document.getElementById('category-dropdown').value;
+    const tagDropdown = document.getElementById('tag-dropdown');
+    const addTagBtn = document.getElementById('add-tag-btn');
+    
+    // Limpiar y deshabilitar el menú de etiquetas si no hay categoría seleccionada
+    if (!categoryId) {
+        tagDropdown.innerHTML = '<option value="">Selecciona una etiqueta</option>';
+        tagDropdown.disabled = true;
+        addTagBtn.disabled = true;
+        return;
     }
     
-    // Cargar etiquetas desde Supabase
-    async function loadTags() {
-        try {
-            const { data: tags, error } = await supabase
-                .from('tags')
-                .select('*')
-                .order('name');
-                
-            if (error) throw error;
-            
-            const tagFilters = document.getElementById('tag-filters');
-            tagFilters.innerHTML = '';
-            
-            tags.forEach(tag => {
-                const filterOption = document.createElement('div');
-                filterOption.className = 'filter-option';
-                filterOption.innerHTML = `
-                    <input type="checkbox" id="tag-${tag.id}" value="${tag.id}">
-                    <label for="tag-${tag.id}">${tag.name}</label>
-                `;
-                tagFilters.appendChild(filterOption);
-            });
-            
-            // Agregar eventos a los filtros
-            document.querySelectorAll('#tag-filters input').forEach(input => {
-                input.addEventListener('change', applyFilters);
-            });
-            
-        } catch (error) {
-            console.error('Error al cargar etiquetas:', error);
-            throw error;
-        }
+    // Filtrar etiquetas por categoría seleccionada
+    const categoryTags = allTags.filter(tag => tag.category_id == categoryId);
+    tagDropdown.innerHTML = '<option value="">Selecciona una etiqueta</option>';
+    
+    // Ordenar etiquetas alfabéticamente
+    categoryTags.sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Agregar etiquetas al menú desplegable
+    categoryTags.forEach(tag => {
+        const option = document.createElement('option');
+        option.value = tag.id;
+        option.textContent = tag.name;
+        tagDropdown.appendChild(option);
+    });
+    
+    // Habilitar el menú de etiquetas
+    tagDropdown.disabled = false;
+    
+    // Agregar evento al menú de etiquetas
+    tagDropdown.addEventListener('change', handleTagChange);
+}
+
+// Manejar cambio de etiqueta
+function handleTagChange() {
+    const tagId = document.getElementById('tag-dropdown').value;
+    const addTagBtn = document.getElementById('add-tag-btn');
+    
+    // Habilitar o deshabilitar el botón según si hay una etiqueta seleccionada
+    addTagBtn.disabled = !tagId;
+}
+
+// Agregar etiqueta a la selección
+function addTagToSelection() {
+    const tagDropdown = document.getElementById('tag-dropdown');
+    const tagId = tagDropdown.value;
+    
+    if (!tagId) return;
+    
+    // Evitar duplicados
+    if (selectedTagIds.includes(parseInt(tagId))) {
+        alert('Esta etiqueta ya está seleccionada');
+        return;
     }
+    
+    const selectedTag = allTags.find(tag => tag.id == tagId);
+    const selectedTags = document.getElementById('selected-tags');
+    
+    // Crear elemento visual para la etiqueta seleccionada
+    const tagItem = document.createElement('div');
+    tagItem.className = 'tag-item';
+    tagItem.dataset.id = tagId;
+    tagItem.innerHTML = `
+        ${selectedTag.name}
+        <span class="tag-remove" data-id="${tagId}">✕</span>
+    `;
+    
+    // Agregar evento para eliminar la etiqueta
+    tagItem.querySelector('.tag-remove').addEventListener('click', function() {
+        const tagIdToRemove = parseInt(this.dataset.id);
+        selectedTagIds = selectedTagIds.filter(id => id !== tagIdToRemove);
+        this.parentElement.remove();
+        applyFilters();
+    });
+    
+    // Agregar al DOM y a la lista de etiquetas seleccionadas
+    selectedTags.appendChild(tagItem);
+    selectedTagIds.push(parseInt(tagId));
+    
+    // Resetear el selector de etiquetas
+    tagDropdown.value = '';
+    document.getElementById('add-tag-btn').disabled = true;
+    
+    // Aplicar filtros con las etiquetas seleccionadas
+    applyFilters();
+}
     
     // Cargar documentos desde Supabase
     async function loadDocuments() {
@@ -569,38 +776,22 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         ];
         
         // Cargar categorías de ejemplo
-        const categoryFilters = document.getElementById('category-filters');
-        categoryFilters.innerHTML = '';
-        
-        sampleCategories.forEach(category => {
-            const filterOption = document.createElement('div');
-            filterOption.className = 'filter-option';
-            filterOption.innerHTML = `
-                <input type="checkbox" id="category-${category.id}" value="${category.id}">
-                <label for="category-${category.id}">${category.name}</label>
-            `;
-            categoryFilters.appendChild(filterOption);
-        });
-        
-        // Cargar etiquetas de ejemplo
-        const tagFilters = document.getElementById('tag-filters');
-        tagFilters.innerHTML = '';
-        
-        sampleTags.forEach(tag => {
-            const filterOption = document.createElement('div');
-            filterOption.className = 'filter-option';
-            filterOption.innerHTML = `
-                <input type="checkbox" id="tag-${tag.id}" value="${tag.id}">
-                <label for="tag-${tag.id}">${tag.name}</label>
-            `;
-            tagFilters.appendChild(filterOption);
-        });
-        
-        // Agregar eventos a los filtros
-        document.querySelectorAll('#category-filters input, #tag-filters input, #file-type-filters input').forEach(input => {
-            input.addEventListener('change', applyFilters);
-        });
-        
+const categoryDropdown = document.getElementById('category-dropdown');
+categoryDropdown.innerHTML = '<option value="">Selecciona una categoría</option>';
+
+sampleCategories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category.id;
+    option.textContent = category.name;
+    categoryDropdown.appendChild(option);
+});
+
+// Guardar datos de ejemplo en las variables globales
+allCategories = sampleCategories;
+allTags = sampleTags;
+
+// Agregar evento al dropdown de categorías
+categoryDropdown.addEventListener('change', handleCategoryChange);        
         // Guardar datos para uso local
         allDocuments = sampleDocuments;
         totalDocuments = sampleDocuments.length;
@@ -613,49 +804,79 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
     
     // Renderizar documentos en la página
+    
     function renderDocuments(docs = []) {
-        const resultsContainer = document.getElementById('results');
-        resultsContainer.innerHTML = '';
-        
-        if (docs.length === 0) {
-            resultsContainer.innerHTML = '<div class="no-results"><h3>No se encontraron resultados</h3><p>Intenta cambiar tus filtros o términos de búsqueda.</p></div>';
-            return;
-        }
-        
-        docs.forEach(doc => {
-            const docElement = document.createElement('div');
-            docElement.className = 'document-card';
-            
-           let tagsHtml = '';
-// Por ahora no mostramos etiquetas
-            
-            docElement.innerHTML = `
-                <div class="document-card-content">
-                    <h3 class="document-title">${doc.title}</h3>
-                    <p class="document-description">${doc.description}</p>
-                    <div class="document-tags">
-                        ${tagsHtml}
-                    </div>
-                    <button class="document-view-btn" data-id="${doc.id}">Ver documento</button>
-                </div>
-            `;
-            
-            resultsContainer.appendChild(docElement);
-        });
-        
-        // Agregar eventos a los botones de ver documento
-        document.querySelectorAll('.document-view-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const docId = parseInt(this.getAttribute('data-id'));
-                openDocument(docId);
-            });
-        });
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = '';
+    
+    // Verificar si el usuario está logueado
+    const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
+    
+    if (docs.length === 0) {
+        resultsContainer.innerHTML = '<div class="no-results"><h3>No se encontraron resultados</h3><p>Intenta cambiar tus filtros o términos de búsqueda.</p></div>';
+        return;
     }
     
-    // Abrir documento en nueva pestaña
-    function openDocument(docId) {
-        window.open(`ver-documento.html?id=${docId}`, '_blank');
-    }
+    docs.forEach(doc => {
+        const docElement = document.createElement('div');
+        docElement.className = 'document-card';
+        
+        // Crear mapa de etiquetas con nombres reales desde allTags
+        const tagsMap = {};
+        allTags.forEach(tag => {
+            tagsMap[tag.id] = tag.name;
+        });
+        
+        // Generar HTML para las etiquetas usando la función auxiliar
+        let tagsHtml = generateTagsHtml(doc, tagsMap);
+        
+        // Solo mostrar el botón de editar si el usuario está logueado
+        const editButton = isLoggedIn ? 
+            `<button class="document-edit-btn" data-id="${doc.id}" style="margin-left: 10px; background-color: #e6b742; color: #2a3855;">Editar etiquetas</button>` : '';
+            
+        docElement.innerHTML = `
+    <div class="document-card-content">
+        <h3 class="document-title">${doc.title}</h3>
+        <p class="document-description">${doc.description}</p>
+        <div class="document-tags">
+            ${tagsHtml}
+        </div>
+        <div style="margin-top: 15px;">
+            <button class="document-view-btn" data-id="${doc.id}">Ver documento</button>
+            ${editButton}
+        </div>
+    </div>
+`;
+            
+        resultsContainer.appendChild(docElement);
+    });
+    
+    // Agregar eventos a los botones de ver documento
+    document.querySelectorAll('.document-view-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const docId = parseInt(this.getAttribute('data-id'));
+            openDocument(docId);
+        });
+    });
+
+    // Agregar eventos a los botones de editar etiquetas (solo si existen)
+    document.querySelectorAll('.document-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const docId = parseInt(this.getAttribute('data-id'));
+            editDocument(docId);
+        });
+    });
+}
+    
+   // Abrir documento en la misma ventana
+function openDocument(docId) {
+    window.location.href = `ver-documento.html?id=${docId}`;
+}
+
+    // Abrir editor de etiquetas en nueva pestaña
+function editDocument(docId) {
+    window.open(`editar-documento.html?id=${docId}`, '_blank');
+}
     
     // Búsqueda de documentos
     document.getElementById('search-btn').addEventListener('click', async function() {
@@ -667,6 +888,10 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             await loadDocuments();
             return;
         }
+
+        // Limpiar etiquetas seleccionadas
+    selectedTagIds = [];
+    document.getElementById('selected-tags').innerHTML = '';
         
         try {
             // Intentar búsqueda en Supabase (si estamos conectados)
@@ -709,26 +934,16 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     });
     
     // Aplicar filtros seleccionados
+
 async function applyFilters() {
-    // Obtener filtros seleccionados
-    const selectedTags = [];
-    document.querySelectorAll('#tag-filters input:checked').forEach(input => {
-        selectedTags.push(parseInt(input.value));
-    });
-    
-    const selectedFileTypes = [];
-    document.querySelectorAll('#file-type-filters input:checked').forEach(input => {
-        selectedFileTypes.push(input.value);
-    });
-    
-    // Si no hay filtros seleccionados, mostrar todos los documentos
-    if (selectedTags.length === 0 && selectedFileTypes.length === 0) {
+    // Si no hay etiquetas seleccionadas, mostrar todos los documentos
+    if (selectedTagIds.length === 0) {
         currentPage = 1;
         await loadDocuments();
         return;
     }
     
-    console.log("Aplicando filtros - etiquetas:", selectedTags, "tipos:", selectedFileTypes);
+    console.log("Aplicando filtros - etiquetas seleccionadas:", selectedTagIds);
     
     try {
         // Aplicar filtros en Supabase
@@ -747,71 +962,16 @@ async function applyFilters() {
         console.log("Documentos obtenidos:", filteredDocs.length);
         
         // Filtrar por etiquetas en el cliente si hay seleccionadas
-        if (selectedTags.length > 0) {
-            console.log("Filtrando por etiquetas:", selectedTags);
+        if (selectedTagIds.length > 0) {
+            console.log("Filtrando por etiquetas:", selectedTagIds);
             
             filteredDocs = filteredDocs.filter(doc => {
-                // Depuración para ver la estructura del documento
-                console.log(`Documento ID ${doc.id}:`, {
-                    title: doc.title,
-                    tags: doc.tags,
-                    all_tags: doc.all_tags
-                });
-                
-                // Construir array de etiquetas del documento
-                let docTags = [];
-                
-                // Añadir la etiqueta principal
-                if (doc.tags !== null && doc.tags !== undefined) {
-                    docTags.push(Number(doc.tags));
-                }
-                
-                // Añadir etiquetas adicionales si existen
-                if (doc.all_tags) {
-                    if (Array.isArray(doc.all_tags)) {
-                        docTags = [...docTags, ...doc.all_tags.map(t => Number(t))];
-                    } else if (typeof doc.all_tags === 'string') {
-                        try {
-                            const parsed = JSON.parse(doc.all_tags);
-                            if (Array.isArray(parsed)) {
-                                docTags = [...docTags, ...parsed.map(t => Number(t))];
-                            }
-                        } catch (e) {
-                            console.error("Error parsing all_tags:", e);
-                        }
-                    }
-                }
-                
-                // Eliminar duplicados
-                docTags = [...new Set(docTags)];
-                console.log("  - Etiquetas del documento:", docTags);
-                
-                // Para modo AND: documento debe tener todas las etiquetas seleccionadas
-                const matchesAll = selectedTags.every(tagId => {
-                    const result = docTags.includes(tagId);
-                    console.log(`  - Etiqueta ${tagId}: ${result ? 'Presente' : 'Ausente'}`);
-                    return result;
-                });
-                
-                console.log(`  - ¿Pasa filtro AND? ${matchesAll ? 'SÍ' : 'NO'}`);
-                return matchesAll;
+                const hasAllTags = documentHasAllTags(doc, selectedTagIds);
+                console.log(`Documento ID ${doc.id}: ${doc.title} - ¿Pasa filtro AND? ${hasAllTags ? 'SÍ' : 'NO'}`);
+                return hasAllTags;
             });
             
             console.log(`Después de filtrar por etiquetas: ${filteredDocs.length} documentos`);
-        }
-        
-        // Filtrar por tipo de archivo si hay seleccionados
-        if (selectedFileTypes.length > 0) {
-            console.log("Filtrando por tipos de archivo:", selectedFileTypes);
-            
-            filteredDocs = filteredDocs.filter(doc => {
-                const fileType = doc.file_type || 'text';
-                const result = selectedFileTypes.includes(fileType);
-                console.log(`Documento ID ${doc.id}: tipo ${fileType} - ${result ? 'Aceptado' : 'Rechazado'}`);
-                return result;
-            });
-            
-            console.log(`Después de filtrar por tipo de archivo: ${filteredDocs.length} documentos`);
         }
         
         // Actualizar variables globales y renderizar resultados
@@ -830,37 +990,11 @@ async function applyFilters() {
         let filteredDocs = [...allDocuments];
         console.log("Usando modo de recuperación. Documentos disponibles:", filteredDocs.length);
         
-        // Filtrar por etiquetas en cliente
-        if (selectedTags.length > 0) {
+        // Filtrar por etiquetas en modo recuperación
+        if (selectedTagIds.length > 0) {
             filteredDocs = filteredDocs.filter(doc => {
-                // Manejar diferentes posibles estructuras de etiquetas
-                if (!doc.tags) return false;
-                
-                let tagIds = [];
-                
-                // Si es un array de objetos de etiquetas (modo local/fallback)
-                if (Array.isArray(doc.tags) && doc.tags.length > 0 && typeof doc.tags[0] === 'object') {
-                    tagIds = doc.tags.map(tag => tag.id);
-                } 
-                // Si es un número único
-                else if (typeof doc.tags === 'number') {
-                    tagIds = [doc.tags];
-                }
-                // Si es array de números
-                else if (Array.isArray(doc.tags)) {
-                    tagIds = doc.tags;
-                }
-                
-                // Verificar si todas las etiquetas seleccionadas están en el documento
-                return selectedTags.every(tagId => tagIds.includes(tagId));
-            });
-        }
-        
-        // Filtrar por tipo de archivo
-        if (selectedFileTypes.length > 0) {
-            filteredDocs = filteredDocs.filter(doc => {
-                const fileType = doc.file_type || doc.fileType || 'text';
-                return selectedFileTypes.includes(fileType);
+                // Usar la función auxiliar incluso en modo recuperación
+                return documentHasAllTags(doc, selectedTagIds);
             });
         }
         
@@ -871,7 +1005,6 @@ async function applyFilters() {
         currentPage = 1;
     }
 }
-    
     // Generar paginación
     function generatePagination(totalDocs, docsPerPage = 9, currentPage = 1) {
         const totalPages = Math.ceil(totalDocs / docsPerPage);
@@ -966,6 +1099,95 @@ async function applyFilters() {
             window.scrollTo(0, document.querySelector('.page-content').offsetTop - 100);
         }
     }
+
+// Manejo de autenticación
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar si el usuario ya está logueado 
+    checkLoginStatus();
+    
+    // Manejar click en botón de login
+    document.getElementById('login-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('login-modal').style.display = 'block';
+    });
+    
+    // Cerrar modal al hacer clic en X
+    document.querySelector('.close-modal').addEventListener('click', function() {
+        document.getElementById('login-modal').style.display = 'none';
+    });
+    
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener('click', function(e) {
+        if (e.target == document.getElementById('login-modal')) {
+            document.getElementById('login-modal').style.display = 'none';
+        }
+    });
+    
+    // Manejar submit del formulario de login
+    document.getElementById('submit-login').addEventListener('click', handleLogin);
+    
+    // También permitir login con la tecla Enter
+    document.getElementById('admin-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    });
+});
+
+// Verificar estado de login
+function checkLoginStatus() {
+    const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
+    
+    // Actualizar texto del botón según estado
+    document.getElementById('login-btn').textContent = isLoggedIn ? 'Cerrar Sesión' : 'Logearse';
+    
+    // Si está logueado, cambiar comportamiento del botón para cerrar sesión
+if (isLoggedIn) {
+    document.getElementById('login-btn').removeEventListener('click', null);
+    document.getElementById('login-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        logout();
+    });
+} else {
+    // El usuario no está logueado
+}
+    
+    // Recargar documentos para actualizar UI
+    if (window.location.pathname.includes('consultar.html')) {
+        loadDocuments();
+    }
+}
+
+// Manejar intento de login
+function handleLogin() {
+    const password = document.getElementById('admin-password').value;
+    const errorElement = document.getElementById('login-error');
+    
+    // Verificar contraseña
+    if (password === 'admin811880') {
+        // Guardar estado en localStorage
+        localStorage.setItem('isAdmin', 'true');
+        
+        // Cerrar modal
+        document.getElementById('login-modal').style.display = 'none';
+        
+        // Limpiar campo de contraseña
+        document.getElementById('admin-password').value = '';
+        
+        // Actualizar UI
+        errorElement.textContent = '';
+        checkLoginStatus();
+    } else {
+        errorElement.textContent = 'Contraseña incorrecta';
+    }
+}
+
+// Cerrar sesión
+function logout() {
+    localStorage.removeItem('isAdmin');
+    checkLoginStatus();
+}
+
 </script>
 
 </body>

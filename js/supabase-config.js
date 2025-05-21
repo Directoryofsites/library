@@ -12,5 +12,31 @@ if (typeof window !== 'undefined' && window.supabaseJs) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
+// Función para comprobar si hay una sesión guardada
+function checkSession() {
+    if (typeof window !== 'undefined' && window.localStorage) {
+        return localStorage.getItem('lumen_logos_session') === 'true';
+    }
+    return false;
+}
+
+// Función para establecer una sesión
+function setSession(active = true) {
+    if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('lumen_logos_session', active);
+        return true;
+    }
+    return false;
+}
+
+// Función para cerrar sesión
+function clearSession() {
+    if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('lumen_logos_session');
+        return true;
+    }
+    return false;
+}
+
 // Exportar para usar en otros archivos
-export { supabase, SUPABASE_URL };
+export { supabase, SUPABASE_URL, checkSession, setSession, clearSession };

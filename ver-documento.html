@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
+<div class="document-actions" style="margin-bottom: 20px;">
+    <button id="edit-tags-btn" class="btn btn-primary" style="margin-right: 10px;">Editar Etiquetas</button>
+</div>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documento - Lumen Logos</title>
@@ -353,6 +358,18 @@
     if (!documentId) {
         window.location.href = 'consultar.html';
     }
+
+    // Agregar evento al botón de editar etiquetas
+document.getElementById('edit-tags-btn').addEventListener('click', function() {
+    const documentId = getDocumentIdFromUrl();
+    window.location.href = `editar-documento.html?id=${documentId}`;
+});
+
+// Función auxiliar para obtener el ID del documento de la URL
+function getDocumentIdFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('id');
+}
     
     // Función para cargar el documento
     async function loadDocument() {

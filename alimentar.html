@@ -61,6 +61,7 @@
                             </ul>
                         </li>
                         <li><a href="contact.html">Contacto</a></li>
+                        <li><a href="#" id="login-btn">Logearse</a></li>
                     </ul>
                 </nav>
             </div>
@@ -219,6 +220,7 @@
         </div>
     </footer>
 
+   
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/scripts.js"></script>
@@ -245,21 +247,37 @@
             console.log('Supabase conectado correctamente a:', SUPABASE_URL);
         }
         
-        // Manejar el envío del formulario de contraseña
-        document.getElementById('password-form').addEventListener('submit', function(event) {
-            event.preventDefault();
+        // Verificar si el usuario ya está logueado
+document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('isAdmin') === 'true') {
+        // Si ya está logueado, mostrar directamente el formulario
+        document.getElementById('password-section').style.display = 'none';
+        document.getElementById('upload-form').style.display = 'block';
+        loadCategoriesAndTags();
+    } else {
+        // Si no está logueado, mostrar el formulario de contraseña
+        document.getElementById('password-section').style.display = 'block';
+    }
+
+    // Manejar el envío del formulario de contraseña
+    document.getElementById('password-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const password = document.getElementById('access-password').value;
+        
+        // Comprobar la contraseña directamente
+        if (password === 'admin811880') {
+            // Guardar estado en localStorage
+            localStorage.setItem('isAdmin', 'true');
             
-            const password = document.getElementById('access-password').value;
-            
-            // Comprobar la contraseña directamente
-            if (password === 'admin811880') {
-                document.getElementById('password-section').style.display = 'none';
-                document.getElementById('upload-form').style.display = 'block';
-                loadCategoriesAndTags();
-            } else {
-                document.getElementById('password-error').style.display = 'block';
-            }
-        });
+            document.getElementById('password-section').style.display = 'none';
+            document.getElementById('upload-form').style.display = 'block';
+            loadCategoriesAndTags();
+        } else {
+            document.getElementById('password-error').style.display = 'block';
+        }
+    });
+});
         
         // Inicializar TinyMCE
         tinymce.init({
@@ -624,22 +642,19 @@ function getSelectedTagIds() {
         };
     }
     
-    // Crear registro del documento en Supabase
-    const documentData = {
-        title,
-        description,
-        content,
-        file_name: fileData?.fileName || null,
-        storage_path: fileData?.storagePath || null,
-        file_url: fileData?.fileUrl || null,
-        file_type: fileData?.fileType || 'text',
-        created_at: new Date().toISOString()
-    };
-    
-    // Sólo asignar la primera etiqueta directamente al documento
-    if (tagIds.length > 0) {
-        documentData.tags = tagIds[0];
-    }
+   // Crear registro del documento en Supabase
+const documentData = {
+    title,
+    description,
+    content,
+    tags: tagIds.length > 0 ? tagIds[0] : null, // Mantenemos compatibilidad con la columna original
+    tags_array: tagIds, // Guardamos todas las etiquetas en la nueva columna como JSON
+    file_name: fileData?.fileName || null,
+    storage_path: fileData?.storagePath || null,
+    file_url: fileData?.fileUrl || null,
+    file_type: fileData?.fileType || 'text',
+    created_at: new Date().toISOString()
+};
     
     console.log('Guardando documento con datos:', documentData);
     
@@ -652,29 +667,7 @@ function getSelectedTagIds() {
         
     if (error) throw error;
     
-    // Si hay más de una etiqueta, actualizar el documento con un campo adicional
-    if (tagIds.length > 1) {
-        console.log('Actualizando documento con etiquetas adicionales:', tagIds);
         
-        try {
-            // Crear un campo JSON personalizado para almacenar todas las etiquetas
-            const { error: updateError } = await supabase
-                .from('documents')
-                .update({ 
-                    all_tags: tagIds  // Almacenamos todas las etiquetas en un campo separado
-                })
-                .eq('id', data.id);
-                
-            if (updateError) {
-                console.error('Error al actualizar etiquetas adicionales:', updateError);
-            } else {
-                console.log('Etiquetas adicionales guardadas correctamente');
-            }
-        } catch (tagError) {
-            console.error('Error al guardar etiquetas adicionales:', tagError);
-        }
-    }
-    
     showStatusMessage('¡Documento publicado exitosamente!');
     
     // Resetear el formulario
@@ -763,5 +756,192 @@ function getSelectedTagIds() {
             }
         }
     </script>
+
+<!-- Modal de Login -->
+<div id="login-modal" class="login-modal">
+    <div class="login-content">
+        <span class="close-modal">&times;</span>
+        <h2>Acceso Administrativo</h2>
+        <div class="login-form">
+            <input type="password" id="admin-password" placeholder="Contraseña">
+            <button id="submit-login">Ingresar</button>
+        </div>
+        <div id="login-error" class="login-error"></div>
+    </div>
+</div>
+
+<style>
+/* Estilos Modal Login */
+.login-modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.login-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: black;
+}
+
+.login-form {
+    margin-top: 20px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-form button:hover {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.login-error {
+    color: #d9534f;
+    margin-top: 10px;
+    text-align: center;
+}
+</style>
+
+<script>
+// Manejo de autenticación
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar si el usuario ya está logueado 
+    checkLoginStatus();
+    
+    // Manejar click en botón de login
+    document.getElementById('login-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
+        
+        if (isLoggedIn) {
+            // Si está logueado, cerrar sesión
+            logout();
+        } else {
+            // Si no está logueado, mostrar modal de login
+            document.getElementById('login-modal').style.display = 'block';
+        }
+    });
+    
+    // Cerrar modal al hacer clic en X
+    document.querySelector('.close-modal').addEventListener('click', function() {
+        document.getElementById('login-modal').style.display = 'none';
+    });
+    
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener('click', function(e) {
+        if (e.target == document.getElementById('login-modal')) {
+            document.getElementById('login-modal').style.display = 'none';
+        }
+    });
+    
+    // Manejar submit del formulario de login
+    document.getElementById('submit-login').addEventListener('click', handleLogin);
+    
+    // También permitir login con la tecla Enter
+    document.getElementById('admin-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    });
+});
+
+// Verificar estado de login
+function checkLoginStatus() {
+    const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
+    
+    // Actualizar texto del botón según estado
+    document.getElementById('login-btn').textContent = isLoggedIn ? 'Cerrar Sesión' : 'Logearse';
+    
+    // Si no está logueado y está en la página de alimentar, verificar si debe mostrar el formulario de contraseña
+    if (!isLoggedIn && window.location.pathname.includes('alimentar.html')) {
+        document.getElementById('password-section').style.display = 'block';
+        document.getElementById('upload-form').style.display = 'none';
+    }
+}
+
+// Manejar intento de login
+function handleLogin() {
+    const password = document.getElementById('admin-password').value;
+    const errorElement = document.getElementById('login-error');
+    
+    // Verificar contraseña
+    if (password === 'admin811880') {
+        // Guardar estado en localStorage
+        localStorage.setItem('isAdmin', 'true');
+        
+        // Cerrar modal
+        document.getElementById('login-modal').style.display = 'none';
+        
+        // Limpiar campo de contraseña
+        document.getElementById('admin-password').value = '';
+        
+        // Actualizar UI
+        errorElement.textContent = '';
+        checkLoginStatus();
+        
+        // Si estamos en la página de alimentar, mostrar el formulario de subida
+        if (window.location.pathname.includes('alimentar.html')) {
+            document.getElementById('password-section').style.display = 'none';
+            document.getElementById('upload-form').style.display = 'block';
+            if (typeof loadCategoriesAndTags === 'function') {
+                loadCategoriesAndTags();
+            }
+        }
+    } else {
+        errorElement.textContent = 'Contraseña incorrecta';
+    }
+}
+
+// Cerrar sesión
+function logout() {
+    localStorage.removeItem('isAdmin');
+    checkLoginStatus();
+    
+    // Si estamos en la página de alimentar, volver a mostrar el formulario de contraseña
+    if (window.location.pathname.includes('alimentar.html')) {
+        document.getElementById('password-section').style.display = 'block';
+        document.getElementById('upload-form').style.display = 'none';
+    }
+}
+</script>
+
 </body>
 </html>

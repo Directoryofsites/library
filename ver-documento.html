@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
-<div class="document-actions" style="margin-bottom: 20px;">
-    <button id="edit-tags-btn" class="btn btn-primary" style="margin-right: 10px;">Editar Etiquetas</button>
-</div>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documento - Lumen Logos</title>
@@ -82,12 +77,33 @@
             margin-bottom: 20px;
         }
         
+        .document-content strong, 
+        .document-content b {
+            font-weight: bold;
+        }
+        
+        .document-content em, 
+        .document-content i {
+            font-style: italic;
+        }
+        
+        .document-content u {
+            text-decoration: underline;
+        }
+        
         .document-content h2, .document-content h3 {
             margin-top: 30px;
             margin-bottom: 15px;
         }
         
-        .document-content ul, .document-content ol {
+        .document-content ul {
+            list-style-type: disc;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+        
+        .document-content ol {
+            list-style-type: decimal;
             margin-bottom: 20px;
             padding-left: 20px;
         }
@@ -110,6 +126,43 @@
             margin-right: 0;
             font-style: italic;
             color: var(--tertiary-color);
+        }
+        
+        .document-content h1 {
+            font-size: 2.2rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .document-content h2 {
+            font-size: 1.8rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .document-content h3 {
+            font-size: 1.5rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .document-content pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        
+        .document-content code {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .document-content a {
+            color: var(--primary-color);
+            text-decoration: underline;
         }
         
         .document-actions {
@@ -174,6 +227,20 @@
         .file-link:hover {
             background-color: #f1f1f1;
         }
+
+        .document-actions {
+            margin-bottom: 20px;
+        }
+        
+        #edit-tags-btn {
+            margin-right: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -234,6 +301,10 @@
     <section class="page-content" style="margin-top: 150px; padding: 50px 0;">
         <div class="container">
             <div class="document-container">
+                <div class="document-actions">
+                    <button id="edit-tags-btn" class="btn btn-primary">Editar Etiquetas</button>
+                </div>
+                
                 <div class="document-header">
                     <h1 class="document-title" id="document-title">Cargando documento...</h1>
                     <p class="document-description" id="document-description"></p>
@@ -359,17 +430,27 @@
         window.location.href = 'consultar.html';
     }
 
-    // Agregar evento al botón de editar etiquetas
-document.getElementById('edit-tags-btn').addEventListener('click', function() {
-    const documentId = getDocumentIdFromUrl();
-    window.location.href = `editar-documento.html?id=${documentId}`;
-});
+    // Controlar visibilidad del botón de editar según estado de login
+    document.addEventListener('DOMContentLoaded', function() {
+        const isAdmin = localStorage.getItem('isAdmin') === 'true';
+        const editTagsBtn = document.getElementById('edit-tags-btn');
+        
+        if (!isAdmin) {
+            editTagsBtn.style.display = 'none';
+        }
+    });
 
-// Función auxiliar para obtener el ID del documento de la URL
-function getDocumentIdFromUrl() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('id');
-}
+    // Agregar evento al botón de editar etiquetas
+    document.getElementById('edit-tags-btn').addEventListener('click', function() {
+        const documentId = getDocumentIdFromUrl();
+        window.location.href = `editar-documento.html?id=${documentId}`;
+    });
+
+    // Función auxiliar para obtener el ID del documento de la URL
+    function getDocumentIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+    }
     
     // Función para cargar el documento
     async function loadDocument() {
@@ -400,7 +481,26 @@ function getDocumentIdFromUrl() {
             // Cargar los datos del documento en la página
             document.getElementById('document-title').textContent = data.title;
             document.getElementById('document-description').textContent = data.description;
-            document.getElementById('document-content').innerHTML = data.content;
+            
+            // Asegurarnos de que el contenido HTML se muestre correctamente
+            const contentContainer = document.getElementById('document-content');
+            contentContainer.innerHTML = data.content;
+            
+            // Añadir clases CSS para garantizar que los estilos se apliquen
+            const allParagraphs = contentContainer.querySelectorAll('p');
+            allParagraphs.forEach(p => {
+                p.classList.add('document-paragraph');
+            });
+            
+            const allHeadings = contentContainer.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            allHeadings.forEach(h => {
+                h.classList.add('document-heading');
+            });
+            
+            const allLists = contentContainer.querySelectorAll('ul, ol');
+            allLists.forEach(list => {
+                list.classList.add('document-list');
+            });
             
             // Formatear y mostrar la fecha
             const date = new Date(data.created_at);
@@ -410,37 +510,8 @@ function getDocumentIdFromUrl() {
                 year: 'numeric'
             });
             
-            // Si el documento tiene etiquetas
-            if (data.tags && Array.isArray(data.tags) && data.tags.length > 0) {
-                console.log('Documento tiene etiquetas:', data.tags);
-                
-                try {
-                    // Buscar etiquetas por IDs
-                    const { data: tagData, error: tagError } = await supabase
-                        .from('tags')
-                        .select('name')
-                        .in('id', data.tags);
-                    
-                    console.log('Etiquetas obtenidas:', tagData);
-                    
-                    if (tagError) {
-                        console.error('Error al obtener etiquetas:', tagError);
-                    } else if (tagData && tagData.length > 0) {
-                        // Mostrar etiquetas
-                        const tagsContainer = document.getElementById('document-tags');
-                        tagsContainer.innerHTML = '';
-                        
-                        tagData.forEach(tag => {
-                            const tagElement = document.createElement('span');
-                            tagElement.className = 'document-tag';
-                            tagElement.textContent = tag.name;
-                            tagsContainer.appendChild(tagElement);
-                        });
-                    }
-                } catch (tagErr) {
-                    console.error('Error al procesar etiquetas:', tagErr);
-                }
-            }
+            // Obtener y mostrar etiquetas
+            await loadTags(data);
             
             // Si hay un archivo adjunto
             if (data.file_url) {
@@ -479,6 +550,56 @@ function getDocumentIdFromUrl() {
         }
     }
     
+    // Función para cargar etiquetas
+    async function loadTags(document) {
+        // Determinar qué campo de etiquetas usar
+        let tagIds = [];
+        
+        if (document.tags_array && Array.isArray(document.tags_array) && document.tags_array.length > 0) {
+            // Usar el nuevo campo tags_array si existe
+            tagIds = document.tags_array;
+        } else if (document.tags) {
+            // Retroceder al campo tags original
+            if (Array.isArray(document.tags)) {
+                tagIds = document.tags;
+            } else {
+                tagIds = [document.tags].filter(id => id !== null);
+            }
+        }
+        
+        if (tagIds.length === 0) {
+            return;
+        }
+        
+        try {
+            // Buscar etiquetas por IDs
+            const { data: tagData, error: tagError } = await supabase
+                .from('tags')
+                .select('*')
+                .in('id', tagIds);
+            
+            if (tagError) {
+                console.error('Error al obtener etiquetas:', tagError);
+                return;
+            }
+            
+            if (tagData && tagData.length > 0) {
+                // Mostrar etiquetas
+                const tagsContainer = document.getElementById('document-tags');
+                tagsContainer.innerHTML = '';
+                
+                tagData.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'document-tag';
+                    tagElement.textContent = tag.name;
+                    tagsContainer.appendChild(tagElement);
+                });
+            }
+        } catch (error) {
+            console.error('Error al procesar etiquetas:', error);
+        }
+    }
+    
     // Función para cargar datos locales como fallback
     function loadLocalDocument() {
         console.log('Cargando datos locales como fallback');
@@ -489,7 +610,7 @@ function getDocumentIdFromUrl() {
                 id: 1,
                 title: 'Estudio sobre el Salmo 23',
                 description: 'Un análisis profundo del Salmo del pastor divino',
-                content: '<p>El Salmo 23 es quizás uno de los pasajes más conocidos y amados de toda la Escritura...</p>',
+                content: '<p>El Salmo 23 es quizás uno de los pasajes más <strong>conocidos y amados</strong> de toda la Escritura...</p><p>El <em>Señor es mi pastor</em>, nada me faltará.</p>',
                 tags: [
                     { id: 1, name: 'Salmos' },
                     { id: 5, name: 'Gracia' }
@@ -540,7 +661,26 @@ function getDocumentIdFromUrl() {
         // Cargar los datos en la página
         document.getElementById('document-title').textContent = doc.title;
         document.getElementById('document-description').textContent = doc.description;
-        document.getElementById('document-content').innerHTML = doc.content;
+        
+        // Asegurarnos de que el contenido HTML se muestre correctamente
+        const contentContainer = document.getElementById('document-content');
+        contentContainer.innerHTML = doc.content;
+            
+        // Añadir clases CSS para garantizar que los estilos se apliquen
+        const allParagraphs = contentContainer.querySelectorAll('p');
+        allParagraphs.forEach(p => {
+            p.classList.add('document-paragraph');
+        });
+        
+        const allHeadings = contentContainer.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        allHeadings.forEach(h => {
+            h.classList.add('document-heading');
+        });
+        
+        const allLists = contentContainer.querySelectorAll('ul, ol');
+        allLists.forEach(list => {
+            list.classList.add('document-list');
+        });
         
         const date = new Date(doc.created_at);
         document.getElementById('document-date').textContent = date.toLocaleDateString('es-ES', {

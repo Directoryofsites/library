@@ -879,52 +879,63 @@ function editDocument(docId) {
 }
     
     // Búsqueda de documentos
-    document.getElementById('search-btn').addEventListener('click', async function() {
-        const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+document.getElementById('search-btn').addEventListener('click', async function() {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+    
+    if (!searchTerm) {
+        // Si no hay término de búsqueda, usar solo las etiquetas seleccionadas
+        currentPage = 1;
+        await applyFilters();
+        return;
+    }
+    
+    try {
+        // Intentar búsqueda en Supabase (si estamos conectados)
+        const { data, error } = await supabase
+            .from('documents')
+            .select('*')
+            .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
         
-        if (!searchTerm) {
-            // Si no hay término de búsqueda, mostrar todos los documentos
-            currentPage = 1;
-            await loadDocuments();
-            return;
-        }
-
-        // Limpiar etiquetas seleccionadas
-    selectedTagIds = [];
-    document.getElementById('selected-tags').innerHTML = '';
+        // Guardar resultados para filtrado adicional
+        let filteredDocs = data || [];
         
-        try {
-            // Intentar búsqueda en Supabase (si estamos conectados)
-           const { data, error } = await supabase
-    .from('documents')
-    .select('*')
-    .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`)
-    .order('created_at', { ascending: false });
-                
-            if (error) throw error;
-            
-            allDocuments = data || [];
-            totalDocuments = allDocuments.length;
-            renderDocuments(allDocuments.slice(0, documentsPerPage));
-            generatePagination(totalDocuments, documentsPerPage, 1);
-            currentPage = 1;
-            
-        } catch (error) {
-            console.error('Error en la búsqueda:', error);
-            
-            // Búsqueda local si hay error con Supabase
-            const filteredDocs = allDocuments.filter(doc => {
-                return doc.title.toLowerCase().includes(searchTerm) ||
-                       doc.description.toLowerCase().includes(searchTerm) ||
-                       doc.content.toLowerCase().includes(searchTerm);
-            });
-            
-            totalDocuments = filteredDocs.length;
-            renderDocuments(filteredDocs.slice(0, documentsPerPage));
-            generatePagination(totalDocuments, documentsPerPage, 1);
-            currentPage = 1;
+        // Si hay etiquetas seleccionadas, aplicar filtro adicional
+        if (selectedTagIds.length > 0) {
+            filteredDocs = filteredDocs.filter(doc => documentHasAllTags(doc, selectedTagIds));
         }
-    });
+        
+        allDocuments = filteredDocs;
+        totalDocuments = filteredDocs.length;
+        renderDocuments(filteredDocs.slice(0, documentsPerPage));
+        generatePagination(totalDocuments, documentsPerPage, 1);
+        currentPage = 1;
+        
+    } catch (error) {
+        console.error('Error en la búsqueda:', error);
+        
+        // Búsqueda local si hay error con Supabase
+        const filteredDocs = allDocuments.filter(doc => {
+            const matchesSearch = doc.title.toLowerCase().includes(searchTerm) ||
+                   doc.description.toLowerCase().includes(searchTerm) ||
+                   doc.content.toLowerCase().includes(searchTerm);
+            
+            // Si hay etiquetas seleccionadas, verificar que el documento tenga todas
+            if (selectedTagIds.length > 0) {
+                return matchesSearch && documentHasAllTags(doc, selectedTagIds);
+            }
+            
+            return matchesSearch;
+        });
+        
+        totalDocuments = filteredDocs.length;
+        renderDocuments(filteredDocs.slice(0, documentsPerPage));
+        generatePagination(totalDocuments, documentsPerPage, 1);
+        currentPage = 1;
+    }
+});
     
     // También permitir búsqueda al presionar Enter
     document.getElementById('search-input').addEventListener('keypress', function(e) {
@@ -936,21 +947,30 @@ function editDocument(docId) {
     // Aplicar filtros seleccionados
 
 async function applyFilters() {
-    // Si no hay etiquetas seleccionadas, mostrar todos los documentos
-    if (selectedTagIds.length === 0) {
+    // Obtener término de búsqueda actual
+    const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+    
+    // Si no hay etiquetas seleccionadas ni término de búsqueda, mostrar todos los documentos
+    if (selectedTagIds.length === 0 && !searchTerm) {
         currentPage = 1;
         await loadDocuments();
         return;
     }
     
     console.log("Aplicando filtros - etiquetas seleccionadas:", selectedTagIds);
+    console.log("Término de búsqueda:", searchTerm);
     
     try {
-        // Aplicar filtros en Supabase
+        // Iniciar consulta base
         let query = supabase
             .from('documents')
             .select('*')
             .order('created_at', { ascending: false });
+        
+        // Si hay término de búsqueda, aplicar filtro
+        if (searchTerm) {
+            query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`);
+        }
             
         // Obtener todos los documentos para filtrar en cliente
         const { data, error } = await query;
@@ -990,12 +1010,18 @@ async function applyFilters() {
         let filteredDocs = [...allDocuments];
         console.log("Usando modo de recuperación. Documentos disponibles:", filteredDocs.length);
         
+        // Aplicar filtro de búsqueda si hay término
+        if (searchTerm) {
+            filteredDocs = filteredDocs.filter(doc => 
+                doc.title.toLowerCase().includes(searchTerm) ||
+                doc.description.toLowerCase().includes(searchTerm) ||
+                doc.content.toLowerCase().includes(searchTerm)
+            );
+        }
+        
         // Filtrar por etiquetas en modo recuperación
         if (selectedTagIds.length > 0) {
-            filteredDocs = filteredDocs.filter(doc => {
-                // Usar la función auxiliar incluso en modo recuperación
-                return documentHasAllTags(doc, selectedTagIds);
-            });
+            filteredDocs = filteredDocs.filter(doc => documentHasAllTags(doc, selectedTagIds));
         }
         
         // Actualizar UI

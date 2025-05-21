@@ -280,21 +280,26 @@ document.addEventListener('DOMContentLoaded', function() {
 });
         
         // Inicializar TinyMCE
-        tinymce.init({
-            selector: '#content',
-            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table wordcount help',
-            toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-            height: 400,
-            promotion: false,
-            branding: false,
-            menubar: 'file edit view insert format tools table help',
-            skin: 'oxide',
-            setup: function(editor) {
-                editor.on('change', function() {
-                    editor.save();
-                });
-            }
+tinymce.init({
+    selector: '#content',
+    plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table wordcount help',
+    toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+    height: 400,
+    promotion: false,
+    branding: false,
+    menubar: 'file edit view insert format tools table help',
+    skin: 'oxide',
+    readonly: false,
+    forced_root_block: '',
+    setup: function(editor) {
+        editor.on('change', function() {
+            editor.save();
         });
+    },
+    init_instance_callback: function(editor) {
+        editor.setMode('design'); // Intentar forzar el modo de edición
+    }
+});
         
         // Cargar categorías y etiquetas desde Supabase
         async function loadCategoriesAndTags() {

@@ -10,9 +10,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 
-<!-- Incluir TinyMCE para el editor de texto enriquecido (modo local) -->
-<script src="js/tinymce/js/tinymce/tinymce.min.js"></script>
-
+<!-- Estilo para el editor de texto simple -->
+<style>
+    #content-simple {
+        width: 100%;
+        min-height: 400px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        resize: vertical;
+    }
+    
+    .content-toolbar {
+        background: #f5f5f5;
+        padding: 8px;
+        margin-bottom: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px 5px 0 0;
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .content-toolbar button {
+        margin-right: 5px;
+        padding: 5px 10px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    
+    .content-toolbar button:hover {
+        background: #e6e6e6;
+    }
+</style>
 </head>
 <body>
     <!-- Header -->
@@ -100,9 +134,16 @@
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 20px;">
-                        <label for="content" style="display: block; margin-bottom: 5px; font-weight: 600;">Contenido completo*</label>
-                        <textarea id="content" name="content" required></textarea>
-                    </div>
+    <label for="content-simple" style="display: block; margin-bottom: 5px; font-weight: 600;">Contenido completo*</label>
+    <div class="content-toolbar">
+        <button type="button" id="bold-btn" title="Negrita"><i class="fas fa-bold"></i></button>
+        <button type="button" id="italic-btn" title="Cursiva"><i class="fas fa-italic"></i></button>
+        <button type="button" id="underline-btn" title="Subrayado"><i class="fas fa-underline"></i></button>
+        <button type="button" id="paste-from-word-btn" title="Pegar desde Word (mantiene formato)">Pegar desde Word</button>
+    </div>
+    <textarea id="content-simple" name="content" required></textarea>
+    <input type="hidden" id="content" name="content-html" required>
+</div>
                     
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">Archivo (opcional)</label>
@@ -280,26 +321,78 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
         
-        // Inicializar TinyMCE
-tinymce.init({
-    selector: '#content',
-    plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table wordcount help',
-    toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-    height: 400,
-    promotion: false,
-    branding: false,
-    menubar: 'file edit view insert format tools table help',
-    skin: 'oxide',
-    readonly: false,
-    forced_root_block: '',
-    setup: function(editor) {
-        editor.on('change', function() {
-            editor.save();
-        });
-    },
-    init_instance_callback: function(editor) {
-        editor.setMode('design'); // Intentar forzar el modo de edición
+        // Funcionalidad para el editor simple
+document.addEventListener('DOMContentLoaded', function() {
+    // Referencias a elementos
+    const contentTextarea = document.getElementById('content-simple');
+    const contentHiddenInput = document.getElementById('content');
+    const boldBtn = document.getElementById('bold-btn');
+    const italicBtn = document.getElementById('italic-btn');
+    const underlineBtn = document.getElementById('underline-btn');
+    const pasteFromWordBtn = document.getElementById('paste-from-word-btn');
+    
+    // Función para actualizar el campo oculto con el contenido
+    function updateHiddenField() {
+        // Convertir saltos de línea en <br> para HTML
+        let htmlContent = contentTextarea.value.replace(/\n/g, '<br>');
+        contentHiddenInput.value = htmlContent;
     }
+    
+    // Escuchar cambios en el textarea
+    contentTextarea.addEventListener('input', updateHiddenField);
+    
+    // Aplicar formato de negrita
+    boldBtn.addEventListener('click', function() {
+        const start = contentTextarea.selectionStart;
+        const end = contentTextarea.selectionEnd;
+        const selectedText = contentTextarea.value.substring(start, end);
+        
+        if (selectedText) {
+            const replacement = `<strong>${selectedText}</strong>`;
+            contentTextarea.value = contentTextarea.value.substring(0, start) + replacement + contentTextarea.value.substring(end);
+            updateHiddenField();
+        }
+    });
+    
+    // Aplicar formato de cursiva
+    italicBtn.addEventListener('click', function() {
+        const start = contentTextarea.selectionStart;
+        const end = contentTextarea.selectionEnd;
+        const selectedText = contentTextarea.value.substring(start, end);
+        
+        if (selectedText) {
+            const replacement = `<em>${selectedText}</em>`;
+            contentTextarea.value = contentTextarea.value.substring(0, start) + replacement + contentTextarea.value.substring(end);
+            updateHiddenField();
+        }
+    });
+    
+    // Aplicar formato de subrayado
+    underlineBtn.addEventListener('click', function() {
+        const start = contentTextarea.selectionStart;
+        const end = contentTextarea.selectionEnd;
+        const selectedText = contentTextarea.value.substring(start, end);
+        
+        if (selectedText) {
+            const replacement = `<u>${selectedText}</u>`;
+            contentTextarea.value = contentTextarea.value.substring(0, start) + replacement + contentTextarea.value.substring(end);
+            updateHiddenField();
+        }
+    });
+    
+    // Modal para pegar desde Word
+    pasteFromWordBtn.addEventListener('click', function() {
+        const wordContent = prompt('Pega aquí el contenido de Word:');
+        
+        if (wordContent) {
+            // Mantener el HTML pero limpiar estilos
+            contentTextarea.value = wordContent;
+            updateHiddenField();
+        }
+    });
+    
+    // Inicializar el campo oculto
+    updateHiddenField();
 });
         
         // Cargar categorías y etiquetas desde Supabase
@@ -576,7 +669,7 @@ function getSelectedTagIds() {
             // Verificar campos requeridos
             const title = document.getElementById('title').value.trim();
             const description = document.getElementById('description').value.trim();
-            const content = tinymce.get('content').getContent();
+            const content = document.getElementById('content').value;
             
             if (!title || !description || !content) {
                 showStatusMessage('Por favor complete todos los campos requeridos.', true);

@@ -10,43 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 
-<!-- Estilo para el editor de texto simple -->
-<style>
-    #content-simple {
-        width: 100%;
-        min-height: 400px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        font-family: 'Open Sans', sans-serif;
-        font-size: 16px;
-        line-height: 1.6;
-        resize: vertical;
-    }
-    
-    .content-toolbar {
-        background: #f5f5f5;
-        padding: 8px;
-        margin-bottom: 5px;
-        border: 1px solid #ddd;
-        border-radius: 5px 5px 0 0;
-        display: flex;
-        flex-wrap: wrap;
-    }
-    
-    .content-toolbar button {
-        margin-right: 5px;
-        padding: 5px 10px;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        cursor: pointer;
-    }
-    
-    .content-toolbar button:hover {
-        background: #e6e6e6;
-    }
-</style>
+    <!-- Include Quill stylesheet -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
     <!-- Header -->
@@ -134,16 +99,11 @@
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 20px;">
-    <label for="content-simple" style="display: block; margin-bottom: 5px; font-weight: 600;">Contenido completo*</label>
-    <div class="content-toolbar">
-        <button type="button" id="bold-btn" title="Negrita"><i class="fas fa-bold"></i></button>
-        <button type="button" id="italic-btn" title="Cursiva"><i class="fas fa-italic"></i></button>
-        <button type="button" id="underline-btn" title="Subrayado"><i class="fas fa-underline"></i></button>
-        <button type="button" id="paste-from-word-btn" title="Pegar desde Word (mantiene formato)">Pegar desde Word</button>
-    </div>
-    <textarea id="content-simple" name="content" required></textarea>
-    <input type="hidden" id="content" name="content-html" required>
-</div>
+                        <label for="editor-container" style="display: block; margin-bottom: 5px; font-weight: 600;">Contenido completo*</label>
+                        <!-- Quill Editor Container -->
+                        <div id="editor-container" style="height: 400px; border: 1px solid #ddd; border-radius: 5px;"></div>
+                        <input type="hidden" id="content" name="content-html" required>
+                    </div>
                     
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">Archivo (opcional)</label>
@@ -264,6 +224,8 @@
 
    
     <!-- Scripts -->
+    <!-- Include Quill JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/scripts.js"></script>
     <script type="module">
@@ -289,111 +251,114 @@
             console.log('Supabase conectado correctamente a:', SUPABASE_URL);
         }
         
+        // Variable global para almacenar el editor Quill
+        let quill;
+        
         // Verificar si el usuario ya está logueado
-document.addEventListener('DOMContentLoaded', function() {
-    if (localStorage.getItem('isAdmin') === 'true') {
-        // Si ya está logueado, mostrar directamente el formulario
-        document.getElementById('password-section').style.display = 'none';
-        document.getElementById('upload-form').style.display = 'block';
-        loadCategoriesAndTags();
-    } else {
-        // Si no está logueado, mostrar el formulario de contraseña
-        document.getElementById('password-section').style.display = 'block';
-    }
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('isAdmin') === 'true') {
+                // Si ya está logueado, mostrar directamente el formulario
+                document.getElementById('password-section').style.display = 'none';
+                document.getElementById('upload-form').style.display = 'block';
+                loadCategoriesAndTags();
+                initQuill();
+            } else {
+                // Si no está logueado, mostrar el formulario de contraseña
+                document.getElementById('password-section').style.display = 'block';
+            }
 
-    // Manejar el envío del formulario de contraseña
-    document.getElementById('password-form').addEventListener('submit', function(event) {
-        event.preventDefault();
+            // Manejar el envío del formulario de contraseña
+            document.getElementById('password-form').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const password = document.getElementById('access-password').value;
+                
+                try {
+                    // Generar el hash de la contraseña
+                    const hashedPassword = await hashPassword(password);
+                    
+                    // Verificar con la función RPC
+                    const { data, error } = await supabase.rpc('verify_admin_password', {
+                        pass: hashedPassword
+                    });
+                    
+                    if (error) {
+                        throw error;
+                    }
+                    
+                    if (data === true) {
+                        // Contraseña correcta - guardar estado
+                        localStorage.setItem('isAdmin', 'true');
+                        
+                        document.getElementById('password-section').style.display = 'none';
+                        document.getElementById('upload-form').style.display = 'block';
+                        loadCategoriesAndTags();
+                        initQuill();
+                    } else {
+                        document.getElementById('password-error').style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error al verificar credenciales:', error.message);
+                    document.getElementById('password-error').style.display = 'block';
+                    document.getElementById('password-error').textContent = 'Error al verificar. Intente nuevamente.';
+                }
+            });
+        });
         
-        const password = document.getElementById('access-password').value;
-        
-        // Comprobar la contraseña directamente
-        if (password === 'admin811880') {
-            // Guardar estado en localStorage
-            localStorage.setItem('isAdmin', 'true');
+        // Inicializar el editor Quill
+        function initQuill() {
+            // Configuración para Quill
+            const toolbarOptions = [
+                ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                ['blockquote', 'code-block'],
+                
+                [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+                [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+                
+                [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                
+                [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults
+                [{ 'font': [] }],
+                [{ 'align': [] }],
+                
+                ['clean']                                         // remove formatting
+            ];
             
-            document.getElementById('password-section').style.display = 'none';
-            document.getElementById('upload-form').style.display = 'block';
-            loadCategoriesAndTags();
-        } else {
-            document.getElementById('password-error').style.display = 'block';
+            // Inicializar Quill
+            quill = new Quill('#editor-container', {
+                modules: {
+                    toolbar: toolbarOptions
+                },
+                theme: 'snow'
+            });
+            
+            // Actualizar el campo oculto al cambiar el contenido
+            quill.on('text-change', function() {
+                document.getElementById('content').value = quill.root.innerHTML;
+            });
+            
+            // Añadir función para pegar desde Word
+            const toolbar = quill.getModule('toolbar');
+            toolbar.addHandler('paste-from-word', function() {
+                const wordContent = prompt('Pega aquí el contenido de Word:');
+                
+                if (wordContent) {
+                    quill.clipboard.dangerouslyPasteHTML(wordContent);
+                }
+            });
         }
-    });
-});
         
-        // Funcionalidad para el editor simple
-document.addEventListener('DOMContentLoaded', function() {
-    // Referencias a elementos
-    const contentTextarea = document.getElementById('content-simple');
-    const contentHiddenInput = document.getElementById('content');
-    const boldBtn = document.getElementById('bold-btn');
-    const italicBtn = document.getElementById('italic-btn');
-    const underlineBtn = document.getElementById('underline-btn');
-    const pasteFromWordBtn = document.getElementById('paste-from-word-btn');
-    
-    // Función para actualizar el campo oculto con el contenido
-    function updateHiddenField() {
-        // Convertir saltos de línea en <br> para HTML
-        let htmlContent = contentTextarea.value.replace(/\n/g, '<br>');
-        contentHiddenInput.value = htmlContent;
-    }
-    
-    // Escuchar cambios en el textarea
-    contentTextarea.addEventListener('input', updateHiddenField);
-    
-    // Aplicar formato de negrita
-    boldBtn.addEventListener('click', function() {
-        const start = contentTextarea.selectionStart;
-        const end = contentTextarea.selectionEnd;
-        const selectedText = contentTextarea.value.substring(start, end);
-        
-        if (selectedText) {
-            const replacement = `<strong>${selectedText}</strong>`;
-            contentTextarea.value = contentTextarea.value.substring(0, start) + replacement + contentTextarea.value.substring(end);
-            updateHiddenField();
+        // Función para hashear la contraseña
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
-    });
-    
-    // Aplicar formato de cursiva
-    italicBtn.addEventListener('click', function() {
-        const start = contentTextarea.selectionStart;
-        const end = contentTextarea.selectionEnd;
-        const selectedText = contentTextarea.value.substring(start, end);
-        
-        if (selectedText) {
-            const replacement = `<em>${selectedText}</em>`;
-            contentTextarea.value = contentTextarea.value.substring(0, start) + replacement + contentTextarea.value.substring(end);
-            updateHiddenField();
-        }
-    });
-    
-    // Aplicar formato de subrayado
-    underlineBtn.addEventListener('click', function() {
-        const start = contentTextarea.selectionStart;
-        const end = contentTextarea.selectionEnd;
-        const selectedText = contentTextarea.value.substring(start, end);
-        
-        if (selectedText) {
-            const replacement = `<u>${selectedText}</u>`;
-            contentTextarea.value = contentTextarea.value.substring(0, start) + replacement + contentTextarea.value.substring(end);
-            updateHiddenField();
-        }
-    });
-    
-    // Modal para pegar desde Word
-    pasteFromWordBtn.addEventListener('click', function() {
-        const wordContent = prompt('Pega aquí el contenido de Word:');
-        
-        if (wordContent) {
-            // Mantener el HTML pero limpiar estilos
-            contentTextarea.value = wordContent;
-            updateHiddenField();
-        }
-    });
-    
-    // Inicializar el campo oculto
-    updateHiddenField();
-});
         
         // Cargar categorías y etiquetas desde Supabase
         async function loadCategoriesAndTags() {
@@ -512,16 +477,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!categoryName || categoryName.trim() === '') return;
             
             try {
-            // Intentar crear categoría en Supabase
-const { data, error } = await supabase
-    .from('categories')
-    .insert([{ 
-        name: categoryName,
-        created_at: new Date().toISOString(),
-        user_id: '00000000-0000-0000-0000-000000000000' // UUID válido predeterminado
-    }])
-    .select()
-    .single();
+                // Intentar crear categoría en Supabase
+                const { data, error } = await supabase
+                    .from('categories')
+                    .insert([{ 
+                        name: categoryName,
+                        created_at: new Date().toISOString(),
+                        user_id: '00000000-0000-0000-0000-000000000000' // UUID válido predeterminado
+                    }])
+                    .select()
+                    .single();
                     
                 if (error) throw error;
                 
@@ -571,17 +536,17 @@ const { data, error } = await supabase
             if (!tagName || tagName.trim() === '') return;
             
             try {
-              // Intentar crear etiqueta en Supabase
-const { data, error } = await supabase
-    .from('tags')
-    .insert([{ 
-        name: tagName, 
-        category_id: categoryId,
-        created_at: new Date().toISOString(),
-        user_id: '00000000-0000-0000-0000-000000000000' // UUID válido predeterminado
-    }])
-    .select()
-    .single();
+                // Intentar crear etiqueta en Supabase
+                const { data, error } = await supabase
+                    .from('tags')
+                    .insert([{ 
+                        name: tagName, 
+                        category_id: categoryId,
+                        created_at: new Date().toISOString(),
+                        user_id: '00000000-0000-0000-0000-000000000000' // UUID válido predeterminado
+                    }])
+                    .select()
+                    .single();
                     
                 if (error) throw error;
                 
@@ -612,55 +577,55 @@ const { data, error } = await supabase
         });
         
         // Manejar selección de etiquetas - versión mejorada para múltiples etiquetas
-document.getElementById('tag-select').addEventListener('change', function() {
-    const selectedOptions = Array.from(this.selectedOptions);
-    const selectedTagsContainer = document.getElementById('selected-tags');
-    
-    // Obtener los IDs de las etiquetas ya agregadas
-    const existingTagIds = Array.from(selectedTagsContainer.querySelectorAll('.tag'))
-        .map(tag => tag.dataset.id);
-    
-    // Añadir solo las etiquetas recién seleccionadas (no las que ya están)
-    selectedOptions.forEach(option => {
-        // Si esta etiqueta ya está agregada, ignorarla
-        if (existingTagIds.includes(option.value)) {
-            return;
-        }
-        
-        const tagElement = document.createElement('span');
-        tagElement.classList.add('tag');
-        tagElement.dataset.id = option.value;
-        tagElement.textContent = option.textContent;
-        tagElement.style.display = 'inline-block';
-        tagElement.style.padding = '5px 10px';
-        tagElement.style.margin = '0 5px 5px 0';
-        tagElement.style.backgroundColor = '#e6b742';
-        tagElement.style.color = '#2a3855';
-        tagElement.style.borderRadius = '3px';
-        
-        const removeBtn = document.createElement('span');
-        removeBtn.innerHTML = '&times;';
-        removeBtn.style.marginLeft = '5px';
-        removeBtn.style.cursor = 'pointer';
-        removeBtn.addEventListener('click', function() {
-            tagElement.remove();
-            option.selected = false;
+        document.getElementById('tag-select').addEventListener('change', function() {
+            const selectedOptions = Array.from(this.selectedOptions);
+            const selectedTagsContainer = document.getElementById('selected-tags');
+            
+            // Obtener los IDs de las etiquetas ya agregadas
+            const existingTagIds = Array.from(selectedTagsContainer.querySelectorAll('.tag'))
+                .map(tag => tag.dataset.id);
+            
+            // Añadir solo las etiquetas recién seleccionadas (no las que ya están)
+            selectedOptions.forEach(option => {
+                // Si esta etiqueta ya está agregada, ignorarla
+                if (existingTagIds.includes(option.value)) {
+                    return;
+                }
+                
+                const tagElement = document.createElement('span');
+                tagElement.classList.add('tag');
+                tagElement.dataset.id = option.value;
+                tagElement.textContent = option.textContent;
+                tagElement.style.display = 'inline-block';
+                tagElement.style.padding = '5px 10px';
+                tagElement.style.margin = '0 5px 5px 0';
+                tagElement.style.backgroundColor = '#e6b742';
+                tagElement.style.color = '#2a3855';
+                tagElement.style.borderRadius = '3px';
+                
+                const removeBtn = document.createElement('span');
+                removeBtn.innerHTML = '&times;';
+                removeBtn.style.marginLeft = '5px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.addEventListener('click', function() {
+                    tagElement.remove();
+                    option.selected = false;
+                });
+                
+                tagElement.appendChild(removeBtn);
+                selectedTagsContainer.appendChild(tagElement);
+            });
+            
+            // Limpiar la selección actual para que el usuario pueda seleccionar más etiquetas
+            this.selectedIndex = -1;
         });
-        
-        tagElement.appendChild(removeBtn);
-        selectedTagsContainer.appendChild(tagElement);
-    });
-    
-    // Limpiar la selección actual para que el usuario pueda seleccionar más etiquetas
-    this.selectedIndex = -1;
-});
 
-// Función auxiliar para obtener todas las etiquetas seleccionadas al enviar el formulario
-function getSelectedTagIds() {
-    return Array.from(document.querySelectorAll('#selected-tags .tag'))
-        .map(tag => parseInt(tag.dataset.id))
-        .filter(id => !isNaN(id));
-}
+        // Función auxiliar para obtener todas las etiquetas seleccionadas al enviar el formulario
+        function getSelectedTagIds() {
+            return Array.from(document.querySelectorAll('#selected-tags .tag'))
+                .map(tag => parseInt(tag.dataset.id))
+                .filter(id => !isNaN(id));
+        }
         
         // Manejar envío del formulario
         document.getElementById('content-form').addEventListener('submit', async function(e) {
@@ -690,100 +655,100 @@ function getSelectedTagIds() {
             const tagIds = getSelectedTagIds();
             
             try {
-    // Procesar archivo si existe
-    let fileData = null;
-    const fileInput = document.getElementById('file');
-    
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${fileExt}`;
-        
-        // Definir función para determinar el tipo de archivo
-        function getFileType(fileName) {
-            const extension = fileName.split('.').pop().toLowerCase();
-            
-            if (['txt', 'docx', 'doc', 'rtf', 'pptx'].includes(extension)) {
-                return 'text';
-            } else if (extension === 'pdf') {
-                return 'pdf';
-            } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
-                return 'audio';
-            } else if (['mp4', 'webm', 'mov'].includes(extension)) {
-                return 'video';
-            } else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) {
-                return 'image';
-            } else {
-                return 'other';
-            }
-        }
-        
-        // Subir archivo a Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('biblioteca-documentos')
-            .upload(`documentos/${fileName}`, file, {
-                cacheControl: '3600',
-                upsert: false
-            });
-            
-        if (uploadError) throw uploadError;
-
-        // Obtener URL pública del archivo
-        const { data: { publicUrl } } = supabase.storage
-            .from('biblioteca-documentos')
-            .getPublicUrl(`documentos/${fileName}`);
-                        
-        fileData = {
-            fileName: file.name,
-            storagePath: fileName,
-            fileUrl: publicUrl,
-            fileType: getFileType(file.name)
-        };
-    }
-    
-   // Crear registro del documento en Supabase
-const documentData = {
-    title,
-    description,
-    content,
-    tags: tagIds.length > 0 ? tagIds[0] : null, // Mantenemos compatibilidad con la columna original
-    tags_array: tagIds, // Guardamos todas las etiquetas en la nueva columna como JSON
-    file_name: fileData?.fileName || null,
-    storage_path: fileData?.storagePath || null,
-    file_url: fileData?.fileUrl || null,
-    file_type: fileData?.fileType || 'text',
-    created_at: new Date().toISOString()
-};
-    
-    console.log('Guardando documento con datos:', documentData);
-    
-    // Insertar el documento en Supabase
-    const { data, error } = await supabase
-        .from('documents')
-        .insert([documentData])
-        .select()
-        .single();
-        
-    if (error) throw error;
-    
-        
-    showStatusMessage('¡Documento publicado exitosamente!');
-    
-    // Resetear el formulario
-this.reset();
-document.getElementById('content-simple').value = '';
-document.getElementById('content').value = '';
-document.getElementById('selected-tags').innerHTML = '';
-    
-    // Habilitar nuevamente el botón de envío
-    submitButton.disabled = false;
-    submitButton.textContent = originalButtonText;
-    
-    // Redireccionar a la página de consulta después de un breve retraso
-    setTimeout(() => {
-        window.location.href = 'consultar.html';
-    }, 2000);
+                // Procesar archivo si existe
+                let fileData = null;
+                const fileInput = document.getElementById('file');
                 
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}_${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${fileExt}`;
+                    
+                    // Definir función para determinar el tipo de archivo
+                    function getFileType(fileName) {
+                        const extension = fileName.split('.').pop().toLowerCase();
+                        
+                        if (['txt', 'docx', 'doc', 'rtf', 'pptx'].includes(extension)) {
+                            return 'text';
+                        } else if (extension === 'pdf') {
+                            return 'pdf';
+                        } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
+                            return 'audio';
+                        } else if (['mp4', 'webm', 'mov'].includes(extension)) {
+                            return 'video';
+                        } else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(extension)) {
+                            return 'image';
+                        } else {
+                            return 'other';
+                        }
+                    }
+                    
+                    // Subir archivo a Supabase Storage
+                    const { data: uploadData, error: uploadError } = await supabase.storage
+                        .from('biblioteca-documentos')
+                        .upload(`documentos/${fileName}`, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+                        
+                    if (uploadError) throw uploadError;
+
+                    // Obtener URL pública del archivo
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('biblioteca-documentos')
+                        .getPublicUrl(`documentos/${fileName}`);
+                                    
+                    fileData = {
+                        fileName: file.name,
+                        storagePath: fileName,
+                        fileUrl: publicUrl,
+                        fileType: getFileType(file.name)
+                    };
+                }
+                
+                // Crear registro del documento en Supabase
+                const documentData = {
+                    title,
+                    description,
+                    content,
+                    tags: tagIds.length > 0 ? tagIds[0] : null, // Mantenemos compatibilidad con la columna original
+                    tags_array: tagIds, // Guardamos todas las etiquetas en la nueva columna como JSON
+                    file_name: fileData?.fileName || null,
+                    storage_path: fileData?.storagePath || null,
+                    file_url: fileData?.fileUrl || null,
+                    file_type: fileData?.fileType || 'text',
+                    created_at: new Date().toISOString()
+                };
+                
+                console.log('Guardando documento con datos:', documentData);
+                
+                // Insertar el documento en Supabase
+                const { data, error } = await supabase
+                    .from('documents')
+                    .insert([documentData])
+                    .select()
+                    .single();
+                    
+                if (error) throw error;
+                
+                    
+                showStatusMessage('¡Documento publicado exitosamente!');
+                
+                // Resetear el formulario
+                this.reset();
+                quill.root.innerHTML = '';
+                document.getElementById('content').value = '';
+                document.getElementById('selected-tags').innerHTML = '';
+                
+                // Habilitar nuevamente el botón de envío
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+                
+                // Redireccionar a la página de consulta después de un breve retraso
+                setTimeout(() => {
+                    window.location.href = 'consultar.html';
+                }, 2000);
+                            
             } catch (error) {
                 console.error('Error al publicar documento:', error);
                 showStatusMessage(`Error: ${error.message || 'Ocurrió un error al publicar el documento'}`, true);
@@ -812,10 +777,10 @@ document.getElementById('selected-tags').innerHTML = '';
                 alert('Documento guardado localmente para demostración (modo sin conexión).');
                 
                 // Resetear el formulario
-this.reset();
-document.getElementById('content-simple').value = '';
-document.getElementById('content').value = '';
-document.getElementById('selected-tags').innerHTML = '';
+                this.reset();
+                quill.root.innerHTML = '';
+                document.getElementById('content').value = '';
+                document.getElementById('selected-tags').innerHTML = '';
             }
         });
         
@@ -999,36 +964,67 @@ function checkLoginStatus() {
 }
 
 // Manejar intento de login
-function handleLogin() {
+async function handleLogin() {
     const password = document.getElementById('admin-password').value;
     const errorElement = document.getElementById('login-error');
     
-    // Verificar contraseña
-    if (password === 'admin811880') {
-        // Guardar estado en localStorage
-        localStorage.setItem('isAdmin', 'true');
+    try {
+        // Generar el hash de la contraseña
+        const hashedPassword = await hashPassword(password);
         
-        // Cerrar modal
-        document.getElementById('login-modal').style.display = 'none';
+        // Verificar con la función RPC
+        const { data, error } = await supabase.rpc('verify_admin_password', {
+            pass: hashedPassword
+        });
         
-        // Limpiar campo de contraseña
-        document.getElementById('admin-password').value = '';
-        
-        // Actualizar UI
-        errorElement.textContent = '';
-        checkLoginStatus();
-        
-        // Si estamos en la página de alimentar, mostrar el formulario de subida
-        if (window.location.pathname.includes('alimentar.html')) {
-            document.getElementById('password-section').style.display = 'none';
-            document.getElementById('upload-form').style.display = 'block';
-            if (typeof loadCategoriesAndTags === 'function') {
-                loadCategoriesAndTags();
-            }
+        if (error) {
+            throw error;
         }
-    } else {
-        errorElement.textContent = 'Contraseña incorrecta';
+        
+        if (data === true) {
+            // Contraseña correcta - guardar estado
+            localStorage.setItem('isAdmin', 'true');
+            
+            // Cerrar modal
+            document.getElementById('login-modal').style.display = 'none';
+            
+            // Limpiar campo de contraseña
+            document.getElementById('admin-password').value = '';
+            
+            // Actualizar UI
+            errorElement.textContent = '';
+            checkLoginStatus();
+            
+            // Si estamos en la página de alimentar, mostrar el formulario de subida
+            if (window.location.pathname.includes('alimentar.html')) {
+                document.getElementById('password-section').style.display = 'none';
+                document.getElementById('upload-form').style.display = 'block';
+                
+                // Inicializar editor y cargar categorías
+                if (typeof initQuill === 'function') {
+                    initQuill();
+                }
+                
+                if (typeof loadCategoriesAndTags === 'function') {
+                    loadCategoriesAndTags();
+                }
+            }
+        } else {
+            errorElement.textContent = 'Contraseña incorrecta';
+        }
+    } catch (error) {
+        console.error('Error al verificar credenciales:', error.message);
+        errorElement.textContent = 'Error al verificar. Intente nuevamente.';
     }
+}
+
+// Función para hashear la contraseña
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // Cerrar sesión

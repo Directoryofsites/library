@@ -770,9 +770,10 @@ const documentData = {
     showStatusMessage('¡Documento publicado exitosamente!');
     
     // Resetear el formulario
-    this.reset();
-    tinymce.get('content').setContent('');
-    document.getElementById('selected-tags').innerHTML = '';
+this.reset();
+document.getElementById('content-simple').value = '';
+document.getElementById('content').value = '';
+document.getElementById('selected-tags').innerHTML = '';
     
     // Habilitar nuevamente el botón de envío
     submitButton.disabled = false;
@@ -811,9 +812,10 @@ const documentData = {
                 alert('Documento guardado localmente para demostración (modo sin conexión).');
                 
                 // Resetear el formulario
-                this.reset();
-                tinymce.get('content').setContent('');
-                document.getElementById('selected-tags').innerHTML = '';
+this.reset();
+document.getElementById('content-simple').value = '';
+document.getElementById('content').value = '';
+document.getElementById('selected-tags').innerHTML = '';
             }
         });
         

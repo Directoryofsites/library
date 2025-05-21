@@ -1,0 +1,7 @@
+bc611ab0b6f8bc81015ee6c541fd439a97a986324d9a7fbb2d1488f394e1f3df
+
+
+-- Actualizar la contraseña hasheada
+UPDATE admin_auth 
+SET hashed_password = 'bc611ab0b6f8bc81015ee6c541fd439a97a986324d9a7fbb2d1488f394e1f3df'
+WHERE TRUE;

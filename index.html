@@ -141,12 +141,14 @@ Cada alma anhela sentido, dirección, redención. Solo la Palabra viva puede sat
     
     <!-- Agrega el resto de las secciones de tu sitio web aquí -->
 
-    <!-- Scripts -->
-    <script src="js/data-manager.js"></script>
-    <script src="js/scripts.js"></script>
-    
-    <!-- Scripts -->
-    <script src="js/scripts.js"></script>
+  <!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script type="module">
+    import { supabase } from './js/supabase-config.js';
+    window.supabase = supabase;
+</script>
+<script src="js/data-manager.js"></script>
+<script src="js/scripts.js"></script>
 
 <!-- Modal de Login -->
 <div id="login-modal" class="login-modal">
@@ -292,27 +294,52 @@ function checkLoginStatus() {
 }
 
 // Manejar intento de login
-function handleLogin() {
+async function handleLogin() {
     const password = document.getElementById('admin-password').value;
     const errorElement = document.getElementById('login-error');
     
-    // Verificar contraseña
-    if (password === 'admin811880') {
-        // Guardar estado en localStorage
-        localStorage.setItem('isAdmin', 'true');
+    try {
+        // Primero, generamos el hash de la contraseña
+        const hashedPassword = await hashPassword(password);
         
-        // Cerrar modal
-        document.getElementById('login-modal').style.display = 'none';
+        // Luego verificamos con la función RPC
+        const { data, error } = await supabase.rpc('verify_admin_password', {
+            pass: hashedPassword
+        });
         
-        // Limpiar campo de contraseña
-        document.getElementById('admin-password').value = '';
+        if (error) {
+            throw error;
+        }
         
-        // Actualizar UI
-        errorElement.textContent = '';
-        checkLoginStatus();
-    } else {
-        errorElement.textContent = 'Contraseña incorrecta';
+        if (data === true) {
+            // Contraseña correcta - guardar estado
+            localStorage.setItem('isAdmin', 'true');
+            
+            // Cerrar modal
+            document.getElementById('login-modal').style.display = 'none';
+            
+            // Limpiar campo de contraseña
+            document.getElementById('admin-password').value = '';
+            
+            // Actualizar UI
+            errorElement.textContent = '';
+            checkLoginStatus();
+        } else {
+            errorElement.textContent = 'Contraseña incorrecta';
+        }
+    } catch (error) {
+        console.error('Error al verificar credenciales:', error.message);
+        errorElement.textContent = 'Error al verificar. Intente nuevamente.';
     }
+}
+
+// Función para hashear la contraseña
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // Cerrar sesión

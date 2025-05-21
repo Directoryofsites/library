@@ -5,11 +5,13 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // Crear el cliente de Supabase
 let supabase;
 
-// Comprobar si estamos en un navegador
-if (typeof window !== 'undefined' && window.supabaseJs) {
-    supabase = window.supabaseJs.createClient(SUPABASE_URL, SUPABASE_KEY);
-} else if (typeof window !== 'undefined' && window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Inicializar Supabase
+if (typeof window !== 'undefined') {
+    if (window.supabaseJs) {
+        supabase = window.supabaseJs.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else if (window.supabase && window.supabase.createClient) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
 }
 
 // Función para comprobar si hay una sesión guardada

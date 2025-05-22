@@ -1067,7 +1067,7 @@ img, svg, video, canvas, iframe {
 @media (max-width: 768px) {
     .search-dropdown {
         right: auto !important;
-        left: -180px !important;
+        left: -150px !important;
         min-width: 280px;
         max-width: 320px;
     }

@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etiquetado Automático - Lumen Logos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .auto-tag-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .search-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .search-input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .search-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: var(--secondary-color);
+            color: var(--primary-color);
+        }
+        
+        .results-container {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .documents-found {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .document-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .document-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .document-item:last-child {
+            border-bottom: none;
+        }
+        
+        .document-title {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .document-id {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .tags-section {
+            background: #fff3cd;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .category-group {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .category-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .category-content {
+            padding: 15px;
+            display: none;
+        }
+        
+        .category-content.active {
+            display: block;
+        }
+        
+        .tag-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .tag-option {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .tag-option:hover {
+            background: #f8f9fa;
+            border-color: var(--primary-color);
+        }
+        
+        .tag-option input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .selected-tags {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .selected-tag {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .assign-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: #e8f4fd;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .assign-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .assign-btn:hover {
+            background: #0056b3;
+        }
+        
+        .assign-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .log-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+        }
+        
+        .log-success {
+            color: #28a745;
+        }
+        
+        .log-error {
+            color: #dc3545;
+        }
+        
+        .log-info {
+            color: #007bff;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="main-header">
+                <div class="logo">
+                    <img src="images/logo1.png" alt="Lumen Logos">
+                    <div class="logo-text">
+                        <h1>Lumen Logos</h1>
+                        <p>La Luz del Verbo</p>
+                    </div>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Principal</a></li>
+                        <li><a href="alimentar.html">Contribuir</a></li>
+                        <li><a href="consultar.html">Consultar</a></li>
+                        <li><a href="carga-masiva.html">Carga Masiva</a></li>
+                        <li><a href="#" id="login-btn">Logearse</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="page-content" style="margin-top: 150px; padding: 50px 0;">
+        <div class="container">
+            <div class="auto-tag-container">
+                <h2 class="text-center mb-4">Etiquetado Automático de Documentos</h2>
+                <p class="text-center text-muted mb-4">
+                    Busca documentos por palabras clave en el título y asigna etiquetas automáticamente
+                </p>
+                
+                <!-- Authentication Check -->
+                <div id="auth-warning" class="alert alert-warning" style="display: none; padding: 15px; margin-bottom: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px;">
+                    <strong>Acceso requerido:</strong> Debes iniciar sesión como administrador para usar esta funcionalidad.
+                    <button id="login-from-tagger" class="btn btn-primary" style="margin-left: 15px;">Iniciar Sesión</button>
+                </div>
+                
+                <!-- Search Section -->
+                <div id="search-section" class="search-section">
+                    <h3><i class="fas fa-search"></i> Buscar Documentos</h3>
+                    <div class="search-input-group">
+                        <input type="text" id="keyword-input" class="search-input" placeholder="Ingresa la palabra clave para buscar en títulos (ej: 'salmo', 'pablo', 'gracia')">
+                        <button id="search-documents-btn" class="search-btn">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                    <p style="margin: 0; color: #666; font-size: 0.9em;">
+                        <i class="fas fa-info-circle"></i> La búsqueda no distingue entre mayúsculas y minúsculas
+                    </p>
+                </div>
+                
+                <!-- Results Section -->
+                <div id="results-container" class="results-container">
+                    <!-- Documents Found -->
+                    <div id="documents-found" class="documents-found">
+                        <h4><i class="fas fa-file-alt"></i> Documentos Encontrados: <span id="docs-count">0</span></h4>
+                    </div>
+                    
+                    <!-- Document List -->
+                    <div id="document-list" class="document-list">
+                        <!-- Documentos se cargarán aquí dinámicamente -->
+                    </div>
+                    
+                    <!-- Tags Selection Section -->
+                    <div class="tags-section">
+                        <h3><i class="fas fa-tags"></i> Seleccionar Etiquetas para Asignar</h3>
+                        <p style="margin-bottom: 15px; color: #666;">
+                            Selecciona las etiquetas que se asignarán a todos los documentos encontrados:
+                        </p>
+                        
+                        <div id="categories-container">
+                            <!-- Categorías y etiquetas se cargarán aquí -->
+                        </div>
+                        
+                        <!-- Selected Tags Display -->
+                        <div class="selected-tags">
+                            <strong>Etiquetas seleccionadas:</strong>
+                            <div id="selected-tags-display" style="margin-top: 10px;">
+                                <em style="color: #666;">Ninguna etiqueta seleccionada</em>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Assign Section -->
+                    <div class="assign-section">
+                        <h3><i class="fas fa-magic"></i> Asignar Etiquetas</h3>
+                        <p style="margin-bottom: 15px;">
+                            <strong>Resumen:</strong> Se asignarán <span id="summary-tags">0</span> etiqueta(s) 
+                            a <span id="summary-docs">0</span> documento(s).
+                        </p>
+                        
+                        <button id="assign-tags-btn" class="assign-btn" disabled>
+                            <i class="fas fa-magic"></i> Asignar Etiquetas Automáticamente
+                        </button>
+                        
+                        <!-- Progress -->
+                        <div id="progress-container" class="progress-container">
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill"></div>
+                            </div>
+                            <p id="progress-text" style="text-align: center; margin-top: 10px;">0 de 0 documentos procesados</p>
+                        </div>
+                        
+                        <!-- Log -->
+                        <div id="log-container" class="log-container" style="display: none;">
+                            <div id="log-entries"></div>
+                        </div>
+                        
+                        <!-- Summary Stats -->
+                        <div id="summary-stats" class="summary-stats" style="display: none;">
+                            <div class="stat-card">
+                                <div id="stat-processed" class="stat-number">0</div>
+                                <div class="stat-label">Procesados</div>
+                            </div>
+                            <div class="stat-card">
+                                <div id="stat-success" class="stat-number">0</div>
+                                <div class="stat-label">Exitosos</div>
+                            </div>
+                            <div class="stat-card">
+                                <div id="stat-errors" class="stat-number">0</div>
+                                <div class="stat-label">Errores</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="login-modal" style="display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+        <div class="login-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 300px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <span class="close-modal" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h2>Acceso Administrativo</h2>
+            <div class="login-form" style="margin-top: 20px;">
+                <form>
+                    <input type="password" id="admin-password" placeholder="Contraseña" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px;">
+                    <button type="button" id="submit-login" style="width: 100%; padding: 10px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Ingresar</button>
+                </form>
+            </div>
+            <div id="login-error" style="color: #d9534f; margin-top: 10px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/tag-handler.js"></script>
+    
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://cjhbhfvkcwwpnhqixlwd.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqaGJoZnZrY3d3cG5ocWl4bHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMTk2MjQsImV4cCI6MjA1Nzg5NTYyNH0.Db6b_riMZXmM09Bfav-iHtJBaSMX31j-eGPgnaAbI80';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Variables globales
+        let foundDocuments = [];
+        let allCategories = [];
+        let allTags = [];
+        let selectedTagIds = [];
+        let isProcessing = false;
+        
+        // Elementos del DOM
+        const keywordInput = document.getElementById('keyword-input');
+        const searchBtn = document.getElementById('search-documents-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const documentList = document.getElementById('document-list');
+        const docsCount = document.getElementById('docs-count');
+        const categoriesContainer = document.getElementById('categories-container');
+        const selectedTagsDisplay = document.getElementById('selected-tags-display');
+        const assignBtn = document.getElementById('assign-tags-btn');
+        const summaryTags = document.getElementById('summary-tags');
+        const summaryDocs = document.getElementById('summary-docs');
+        const progressContainer = document.getElementById('progress-container');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const logContainer = document.getElementById('log-container');
+        const logEntries = document.getElementById('log-entries');
+        const summaryStats = document.getElementById('summary-stats');
+        const authWarning = document.getElementById('auth-warning');
+        
+        // Verificar autenticación al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            setupEventListeners();
+            loadCategoriesAndTags();
+        });
+        
+        // Verificar autenticación
+        function checkAuthentication() {
+            const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
+            const loginBtn = document.getElementById('login-btn');
+            
+            if (loginBtn) {
+                loginBtn.textContent = isLoggedIn ? 'Cerrar Sesión' : 'Logearse';
+                loginBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (isLoggedIn) {
+                        logout();
+                    } else {
+                        showLoginModal();
+                    }
+                });
+            }
+            
+            if (!isLoggedIn) {
+                authWarning.style.display = 'block';
+                document.getElementById('search-section').style.display = 'none';
+            } else {
+                authWarning.style.display = 'none';
+                document.getElementById('search-section').style.display = 'block';
+            }
+        }
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            searchBtn.addEventListener('click', searchDocuments);
+            keywordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchDocuments();
+                }
+            });
+            
+            assignBtn.addEventListener('click', assignTagsToDocuments);
+            
+            // Login
+            document.getElementById('login-from-tagger').addEventListener('click', showLoginModal);
+            document.getElementById('submit-login').addEventListener('click', handleLogin);
+            document.querySelector('.close-modal').addEventListener('click', hideLoginModal);
+            
+            // Enter key en password
+            document.getElementById('admin-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+        }
+        
+        // Cargar categorías y etiquetas
+        async function loadCategoriesAndTags() {
+            try {
+                // Cargar categorías
+                const { data: categories, error: catError } = await supabase
+                    .from('categories')
+                    .select('*')
+                    .order('name');
+                
+                if (catError) throw catError;
+                allCategories = categories || [];
+                
+                // Cargar etiquetas
+                const { data: tags, error: tagError } = await supabase
+                    .from('tags')
+                    .select('*')
+                    .order('name');
+                
+                if (tagError) throw tagError;
+                allTags = tags || [];
+                
+                renderCategoriesAndTags();
+                
+            } catch (error) {
+                console.error('Error cargando categorías y etiquetas:', error);
+                addLogEntry('Error cargando categorías y etiquetas: ' + error.message, 'error');
+            }
+        }
+        
+        // Renderizar categorías y etiquetas
+        function renderCategoriesAndTags() {
+            categoriesContainer.innerHTML = '';
+            
+            allCategories.forEach(category => {
+                const categoryTags = allTags.filter(tag => tag.category_id === category.id);
+                
+                if (categoryTags.length === 0) return;
+                
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category-group';
+                
+                categoryDiv.innerHTML = `
+                    <div class="category-header" onclick="toggleCategory(${category.id})">
+                        <span>${category.name}</span>
+                        <i class="fas fa-chevron-down" id="chevron-${category.id}"></i>
+                    </div>
+                    <div class="category-content" id="content-${category.id}">
+                        <div class="tag-grid">
+                            ${categoryTags.map(tag => `
+                                <div class="tag-option">
+                                    <input type="checkbox" id="tag-${tag.id}" value="${tag.id}" onchange="updateSelectedTags()">
+                                    <label for="tag-${tag.id}">${tag.name}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                categoriesContainer.appendChild(categoryDiv);
+            });
+        }
+        
+        // Toggle categoría
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(`content-${categoryId}`);
+            const chevron = document.getElementById(`chevron-${categoryId}`);
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('active');
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        }
+        
+        // Actualizar etiquetas seleccionadas
+        function updateSelectedTags() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            selectedTagIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            if (selectedTagIds.length === 0) {
+                selectedTagsDisplay.innerHTML = '<em style="color: #666;">Ninguna etiqueta seleccionada</em>';
+            } else {
+                const selectedTagNames = selectedTagIds.map(id => {
+                    const tag = allTags.find(t => t.id === id);
+                    return tag ? tag.name : `ID: ${id}`;
+                });
+                
+                selectedTagsDisplay.innerHTML = selectedTagNames.map(name => 
+                    `<span class="selected-tag">${name}</span>`
+                ).join('');
+            }
+            
+            updateSummary();
+        }
+        
+        // Buscar documentos
+        async function searchDocuments() {
+            const keyword = keywordInput.value.trim();
+            
+            if (!keyword) {
+                alert('Por favor, ingresa una palabra clave para buscar');
+                return;
+            }
+            
+            try {
+                searchBtn.disabled = true;
+                searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+                
+                const { data: documents, error } = await supabase
+                    .from('documents')
+                    .select('id, title, description')
+                    .ilike('title', `%${keyword}%`)
+                    .order('title');
+                
+                if (error) throw error;
+                
+                foundDocuments = documents || [];
+                displaySearchResults();
+                
+            } catch (error) {
+                console.error('Error buscando documentos:', error);
+                alert('Error al buscar documentos: ' + error.message);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = '<i class="fas fa-search"></i> Buscar';
+            }
+        }
+        
+        // Mostrar resultados de búsqueda
+        function displaySearchResults() {
+            docsCount.textContent = foundDocuments.length;
+            
+            if (foundDocuments.length === 0) {
+                documentList.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No se encontraron documentos con esa palabra clave</div>';
+                resultsContainer.style.display = 'block';
+                updateSummary();
+                return;
+            }
+            
+            documentList.innerHTML = foundDocuments.map(doc => `
+                <div class="document-item">
+                    <div>
+                        <div class="document-title">${doc.title}</div>
+                        <div class="document-id">ID: ${doc.id}</div>
+                        <div style="color: #666; font-size: 0.9em; margin-top: 5px;">${doc.description.substring(0, 100)}...</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            resultsContainer.style.display = 'block';
+            updateSummary();
+        }
+        
+        // Actualizar resumen
+        function updateSummary() {
+            summaryTags.textContent = selectedTagIds.length;
+            summaryDocs.textContent = foundDocuments.length;
+            
+            assignBtn.disabled = selectedTagIds.length === 0 || foundDocuments.length === 0 || isProcessing;
+        }
+        
+        // Asignar etiquetas a documentos
+        async function assignTagsToDocuments() {
+            if (selectedTagIds.length === 0 || foundDocuments.length === 0) {
+                alert('Debes tener documentos encontrados y etiquetas seleccionadas');
+                return;
+            }
+            
+            if (!confirm(`¿Estás seguro de asignar ${selectedTagIds.length} etiqueta(s) a ${foundDocuments.length} documento(s)?`)) {
+                return;
+            }
+            
+            isProcessing = true;
+            assignBtn.disabled = true;
+            assignBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            
+            progressContainer.style.display = 'block';
+            logContainer.style.display = 'block';
+            summaryStats.style.display = 'grid';
+            
+            logEntries.innerHTML = '';
+            addLogEntry('Iniciando asignación automática de etiquetas...', 'info');
+            
+            let processed = 0;
+            let successful = 0;
+            let errors = 0;
+            
+            for (let i = 0; i < foundDocuments.length; i++) {
+                const doc = foundDocuments[i];
+                
+                try {
+                    // Obtener etiquetas actuales del documento
+
+                    console.log(`Procesando documento ID: ${doc.id} - ${doc.title}`);
+
+// AGREGAR ESTAS LÍNEAS PARA VERIFICAR EL ID:
+console.log('Tipo de doc.id:', typeof doc.id);
+console.log('Valor exacto de doc.id:', doc.id);
+
+// Verificar si el documento existe antes de actualizar
+const { data: checkDoc, error: checkError } = await supabase
+    .from('documents')
+    .select('id, title, tags_array')
+    .eq('id', doc.id);
+
+console.log('Verificación de existencia del documento:', checkDoc);
+console.log('¿Error en verificación?:', checkError);
+
+if (checkDoc && checkDoc.length === 0) {
+    console.error('¡DOCUMENTO NO ENCONTRADO! ID:', doc.id);
+    throw new Error(`Documento con ID ${doc.id} no encontrado`);
+}
+
+
+
+const { data: currentDoc, error: fetchError } = await supabase
+    .from('documents')
+    .select('tags_array')
+    .eq('id', doc.id)
+    .single();
+
+if (fetchError) {
+    console.error('Error obteniendo documento:', fetchError);
+    throw fetchError;
+}
+
+console.log('Etiquetas actuales del documento:', currentDoc.tags_array);
+console.log('Etiquetas a agregar:', selectedTagIds);
+
+// Combinar etiquetas existentes con las nuevas
+let existingTags = Array.isArray(currentDoc.tags_array) ? currentDoc.tags_array : [];
+let newTagsArray = [...new Set([...existingTags, ...selectedTagIds])]; // Evitar duplicados
+
+console.log('Nuevo array de etiquetas:', newTagsArray);
+
+// PRUEBA: Intentar actualizar con un valor simple primero
+console.log('Probando actualización con valor simple...');
+const simpleTest = await supabase
+    .from('documents')
+    .update({ tags_array: [57] })
+    .eq('id', doc.id);
+
+console.log('Resultado prueba simple:', simpleTest);
+
+// PRUEBA: Verificar el valor después de la prueba simple
+const simpleVerify = await supabase
+    .from('documents')
+    .select('tags_array')
+    .eq('id', doc.id)
+    .single();
+
+console.log('Verificación de prueba simple - resultado completo:', simpleVerify);
+console.log('Verificación de prueba simple - solo datos:', simpleVerify.data);
+console.log('Verificación de prueba simple - tags_array específico:', simpleVerify.data?.tags_array);
+
+// Actualizar documento - SIN select() primero
+const updateResult = await supabase
+    .from('documents')
+    .update({ tags_array: newTagsArray })
+    .eq('id', doc.id);
+
+console.log('Resultado de actualización sin select:', updateResult);
+
+if (updateResult.error) {
+    console.error('Error actualizando documento:', updateResult.error);
+    throw updateResult.error;
+}
+
+// Verificar la actualización leyendo el documento después
+const { data: verifyDoc, error: verifyError } = await supabase
+    .from('documents')
+    .select('id, title, tags_array')
+    .eq('id', doc.id)
+    .single();
+
+console.log('Verificación después de actualizar:', verifyDoc);
+
+if (verifyError) {
+    throw verifyError;
+}
+
+// Verificar que las etiquetas se guardaron correctamente
+if (!verifyDoc.tags_array || !verifyDoc.tags_array.includes(selectedTagIds[0])) {
+    throw new Error('Las etiquetas no se guardaron correctamente');
+}
+
+console.log('Resultado completo de actualización:', updateResult);
+console.log('¿Hay datos?:', updateResult.data);
+console.log('¿Hay error?:', updateResult.error);
+
+if (updateResult.error) {
+    console.error('Error actualizando documento:', updateResult.error);
+    throw updateResult.error;
+}
+
+// Verificar que realmente se guardó
+console.log('Documento actualizado exitosamente:', updateResult.data);                    
+                    if (updateError) throw updateError;
+                    
+                    successful++;
+                    addLogEntry(`✓ ${doc.title} - Etiquetas asignadas correctamente`, 'success');
+                    
+                } catch (error) {
+                    errors++;
+                    addLogEntry(`✗ ${doc.title} - Error: ${error.message}`, 'error');
+                }
+                
+                processed++;
+                updateProgress(processed, foundDocuments.length, successful, errors);
+            }
+            
+            addLogEntry(`Proceso completado: ${successful} exitosos, ${errors} errores`, 'info');
+            
+            isProcessing = false;
+            assignBtn.disabled = false;
+            assignBtn.innerHTML = '<i class="fas fa-magic"></i> Asignar Etiquetas Automáticamente';
+        }
+        
+        // Actualizar progreso
+        function updateProgress(processed, total, successful, errors) {
+            const percentage = (processed / total) * 100;
+            progressFill.style.width = `${percentage}%`;
+            progressText.textContent = `${processed} de ${total} documentos procesados`;
+            
+            // Actualizar estadísticas
+            document.getElementById('stat-processed').textContent = processed;
+            document.getElementById('stat-success').textContent = successful;
+            document.getElementById('stat-errors').textContent = errors;
+        }
+        
+        // Agregar entrada al log
+        function addLogEntry(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            logEntries.appendChild(entry);
+            logEntries.scrollTop = logEntries.scrollHeight;
+        }
+        
+        // Funciones de autenticación
+        function showLoginModal() {
+            document.getElementById('login-modal').style.display = 'block';
+        }
+        
+        function hideLoginModal() {
+            document.getElementById('login-modal').style.display = 'none';
+            document.getElementById('admin-password').value = '';
+            document.getElementById('login-error').textContent = '';
+        }
+        
+        function handleLogin() {
+            const password = document.getElementById('admin-password').value;
+            const errorElement = document.getElementById('login-error');
+            
+            if (password === 'admin811880') {
+                localStorage.setItem('isAdmin', 'true');
+                hideLoginModal();
+                checkAuthentication();
+                addLogEntry('Sesión iniciada correctamente', 'success');
+            } else {
+                errorElement.textContent = 'Contraseña incorrecta';
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('isAdmin');
+            checkAuthentication();
+            addLogEntry('Sesión cerrada', 'info');
+        }
+        
+        // Exponer funciones globalmente para onclick
+        window.toggleCategory = toggleCategory;
+        window.updateSelectedTags = updateSelectedTags;
+    </script>
+</body>
+</html>

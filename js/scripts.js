@@ -3,15 +3,15 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile Menu Toggle
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    const navMenu = document.querySelector('nav ul');
-    
-    if (mobileMenuBtn && navMenu) {
-        mobileMenuBtn.addEventListener('click', function() {
-            navMenu.classList.toggle('show');
-        });
-    }
+    // Initialize Global Navigation first
+    initGlobalNavigation();
+
+   // Initialize search menu functionality only if we have the required dependencies
+    setTimeout(() => {
+        if (typeof window.supabase !== 'undefined' && typeof initSearchMenu === 'function') {
+            initSearchMenu();
+        }
+    }, 100);
 
     // Header Scroll Effect
     const header = document.querySelector('header');
@@ -142,6 +142,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Image Lightbox
     initLightbox();
+
+// Initialize AOS
+    initAOS();
+    
+    // Initialize Counter Animation
+    initCounterAnimation();
+    
+    // Initialize Google Maps (if available)
+    if (document.getElementById('google-map')) {
+        if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+            initGoogleMap();
+        } else {
+            window.initMap = initGoogleMap;
+        }
+    }
+    
+    // Initialize any countdowns on the page
+    const countdownElements = document.querySelectorAll('[data-countdown]');
+    countdownElements.forEach(element => {
+        const targetDate = element.getAttribute('data-countdown');
+        const elementId = element.id;
+        initCountdown(targetDate, elementId);
+    });
 });
 
 /**
@@ -497,31 +520,382 @@ function initGoogleMap() {
     });
 }
 
-// Call additional initialization functions
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize AOS
-    initAOS();
-    
-    // Initialize Counter Animation
-    initCounterAnimation();
-    
-    // Initialize Google Maps (if available)
-    if (document.getElementById('google-map')) {
-        // Google Maps script is typically loaded asynchronously, so we need to wait for it
-        if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-            initGoogleMap();
-        } else {
-            // Wait for Google Maps to load
-            window.initMap = initGoogleMap;
+/**
+ * Generate Global Navigation HTML
+ */
+function generateGlobalNavigation() {
+    return `
+        <div class="container">
+            <div class="main-header">
+                <div class="logo">
+                    <img src="images/logo1.png" alt="Lumen Logos">
+                    <div class="logo-text">
+                        <h1>La luz del Verbo</h1>
+                        <p>Revelación que ilumina el alma</p>
+                    </div>
+                </div>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Principal</a></li>
+                        <li><a href="about.html">Acerca de</a>
+                            <!-- Submenú desactivado temporalmente
+                            <ul>
+                                <li><a href="mission.html">Nuestra Misión</a></li>
+                                <li><a href="history.html">Historia</a></li>
+                                <li><a href="statement-of-faith.html">Declaración de Fé</a></li>
+                            </ul>
+                            -->
+                        </li>
+                        <!-- Menú CONOCIMIENTO desactivado temporalmente
+                        <li><a href="programs.html">CONOCIMIENTO</a>
+                            <ul>
+                                <li><a href="master-of-divinity.html">Estudios</a></li>
+                                <li><a href="master-of-arts.html">Consultas</a></li>
+                            </ul>
+                        </li>
+                        -->
+                        <li><a href="faculty.html">Enlaces</a></li>
+                        <!-- Menú Títulos desactivado temporalmente
+                        <li><a href="admissions.html">Titulos</a>
+                            <ul>
+                                <li><a href="requirements.html">Requirements</a></li>
+                                <li><a href="tuition.html">Tuition & Fees</a></li>
+                                <li><a href="financial-aid.html">Financial Aid</a></li>
+                                <li><a href="apply.html">Apply Now</a></li>
+                            </ul>
+                        </li>
+                        -->
+                        <li class="search-menu-item">
+                            <a href="#" id="search-menu-btn">Buscar <i class="fas fa-chevron-down"></i></a>
+                            <div class="search-dropdown" id="search-dropdown">
+                                <div class="search-dropdown-content">
+                                    <div class="search-header">
+                                        <h4>Buscar por Etiquetas</h4>
+                                        <div class="selected-tags-display" id="selected-tags-display">
+                                            <!-- Etiquetas seleccionadas aparecerán aquí -->
+                                        </div>
+                                    </div>
+                                    <div class="categories-container" id="categories-container">
+                                        <!-- Las categorías se cargarán dinámicamente -->
+                                        <div class="loading-message">Cargando categorías...</div>
+                                    </div>
+                                    <div class="search-actions">
+                                        <button class="btn-search-execute" id="btn-search-execute" disabled>
+                                            <i class="fas fa-search"></i> Buscar
+                                        </button>
+                                        <button class="btn-clear-tags" id="btn-clear-tags">
+                                            <i class="fas fa-times"></i> Limpiar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li><a href="contact.html">Contacto</a></li>
+                        <li><a href="#" id="login-btn">Logearse</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Initialize Global Navigation
+ */
+function initGlobalNavigation() {
+    const header = document.querySelector('header');
+    if (header) {
+        header.innerHTML = generateGlobalNavigation();
+        
+        // Re-initialize mobile menu after injecting HTML
+        initMobileMenu();
+        
+        // Initialize search menu if on pages that support it
+        if (typeof initSearchMenu === 'function') {
+            initSearchMenu();
         }
     }
+}
+
+/**
+ * Initialize Mobile Menu (separated for re-use)
+ */
+function initMobileMenu() {
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const navMenu = document.querySelector('nav ul');
     
-    // Initialize any countdowns on the page
-    const countdownElements = document.querySelectorAll('[data-countdown]');
-    countdownElements.forEach(element => {
-        const targetDate = element.getAttribute('data-countdown');
-        const elementId = element.id;
-        initCountdown(targetDate, elementId);
-    });
-});
+    if (mobileMenuBtn && navMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            navMenu.classList.toggle('show');
+        });
+    }
+}
+
+/**
+ * Initialize Search Menu (for pages that support it)
+ */
+function initSearchMenu() {
+    // Variables para el menú de búsqueda
+    let searchSelectedTags = [];
+    let searchAllCategories = [];
+    let searchAllTags = [];
+
+    // Cargar categorías y etiquetas inteligentes
+    loadSmartCategoriesAndTags();
+    
+    // Configurar eventos del menú
+    setupSearchMenuEvents();
+
+    // Cargar solo categorías y etiquetas que están en uso
+    async function loadSmartCategoriesAndTags() {
+        try {
+            // Verificar si Supabase está disponible
+            if (typeof window.supabase === 'undefined') {
+                console.log('Supabase no disponible en esta página');
+                return;
+            }
+
+            const supabase = window.supabase.createClient(
+                'https://cjhbhfvkcwwpnhqixlwd.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqaGJoZnZrY3d3cG5ocWl4bHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMTk2MjQsImV4cCI6MjA1Nzg5NTYyNH0.Db6b_riMZXmM09Bfav-iHtJBaSMX31j-eGPgnaAbI80'
+            );
+            
+            // Obtener todas las etiquetas usadas en documentos
+            const { data: documents, error: docsError } = await supabase
+                .from('documents')
+                .select('tags_array');
+                
+            if (docsError) throw docsError;
+            
+            // Extraer todas las etiquetas únicas en uso
+            const usedTagIds = new Set();
+            documents.forEach(doc => {
+                const tags = getDocumentTags(doc);
+                tags.forEach(tagId => usedTagIds.add(tagId));
+            });
+            
+            // Obtener información de categorías y etiquetas
+            const { data: categories, error: catError } = await supabase
+                .from('categories')
+                .select('*')
+                .order('name');
+                
+            const { data: tags, error: tagsError } = await supabase
+                .from('tags')
+                .select('*')
+                .order('name');
+                
+            if (catError) throw catError;
+            if (tagsError) throw tagsError;
+            
+            // Filtrar solo etiquetas que están en uso
+            const usedTags = tags.filter(tag => usedTagIds.has(tag.id));
+            
+            // Agrupar etiquetas por categoría
+            const categoriesWithTags = categories
+                .map(category => ({
+                    ...category,
+                    tags: usedTags.filter(tag => tag.category_id === category.id)
+                }))
+                .filter(category => category.tags.length > 0);
+            
+            searchAllCategories = categoriesWithTags;
+            searchAllTags = usedTags;
+            
+            renderSearchCategories();
+            
+        } catch (error) {
+            console.error('Error cargando categorías inteligentes:', error);
+            const container = document.getElementById('categories-container');
+            if (container) {
+                container.innerHTML = '<div class="loading-message">Error al cargar categorías</div>';
+            }
+        }
+    }
+
+    function renderSearchCategories() {
+        const container = document.getElementById('categories-container');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        searchAllCategories.forEach(category => {
+            const categoryElement = document.createElement('div');
+            categoryElement.className = 'category-item';
+            categoryElement.innerHTML = `
+                <div class="category-header" data-category-id="${category.id}">
+                    <span class="category-name">${category.name}</span>
+                    <span class="category-count">${category.tags.length} etiquetas</span>
+                </div>
+                <div class="tags-list" id="tags-${category.id}">
+                    ${category.tags.map(tag => 
+                        `<div class="tag-item" data-tag-id="${tag.id}" data-tag-name="${tag.name}">
+                            ${tag.name}
+                        </div>`
+                    ).join('')}
+                </div>
+            `;
+            container.appendChild(categoryElement);
+        });
+    }
+
+    function setupSearchMenuEvents() {
+        // Toggle del menú principal
+        const searchMenuBtn = document.getElementById('search-menu-btn');
+        if (searchMenuBtn) {
+            searchMenuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = document.getElementById('search-dropdown');
+                if (dropdown) {
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+        }
+        
+        // Cerrar menú al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('search-dropdown');
+            const menuBtn = document.getElementById('search-menu-btn');
+            if (dropdown && menuBtn && !dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        // Toggle de categorías y selección de etiquetas
+        document.addEventListener('click', function(e) {
+            // Toggle categoría
+            if (e.target.closest('.category-header')) {
+                const header = e.target.closest('.category-header');
+                const categoryId = header.dataset.categoryId;
+                const tagsList = document.getElementById(`tags-${categoryId}`);
+                
+                if (tagsList) {
+                    // Cerrar otras categorías
+                    document.querySelectorAll('.tags-list.active').forEach(list => {
+                        if (list.id !== `tags-${categoryId}`) {
+                            list.classList.remove('active');
+                            if (list.previousElementSibling) {
+                                list.previousElementSibling.classList.remove('active');
+                            }
+                        }
+                    });
+                    
+                    // Toggle actual
+                    tagsList.classList.toggle('active');
+                    header.classList.toggle('active');
+                }
+            }
+            
+            // Seleccionar etiqueta
+            if (e.target.classList.contains('tag-item')) {
+                const tagId = parseInt(e.target.dataset.tagId);
+                const tagName = e.target.dataset.tagName;
+                
+                if (searchSelectedTags.find(t => t.id === tagId)) {
+                    // Quitar etiqueta
+                    searchSelectedTags = searchSelectedTags.filter(t => t.id !== tagId);
+                    e.target.classList.remove('selected');
+                } else {
+                    // Agregar etiqueta
+                    searchSelectedTags.push({ id: tagId, name: tagName });
+                    e.target.classList.add('selected');
+                }
+                
+                updateSelectedTagsDisplay();
+                updateSearchButton();
+            }
+        });
+        
+        // Botón de búsqueda
+        const executeBtn = document.getElementById('btn-search-execute');
+        if (executeBtn) {
+            executeBtn.addEventListener('click', function() {
+                if (searchSelectedTags.length > 0) {
+                    executeTagSearch();
+                }
+            });
+        }
+        
+        // Botón limpiar
+        const clearBtn = document.getElementById('btn-clear-tags');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                clearSelectedTags();
+            });
+        }
+    }
+
+    function updateSelectedTagsDisplay() {
+        const container = document.getElementById('selected-tags-display');
+        if (!container) return;
+        
+        container.innerHTML = searchSelectedTags.map(tag => 
+            `<div class="selected-tag-chip">
+                ${tag.name}
+                <span class="remove-tag" data-tag-id="${tag.id}">×</span>
+            </div>`
+        ).join('');
+        
+        // Eventos para quitar etiquetas
+        container.querySelectorAll('.remove-tag').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tagId = parseInt(this.dataset.tagId);
+                searchSelectedTags = searchSelectedTags.filter(t => t.id !== tagId);
+                const tagElement = document.querySelector(`[data-tag-id="${tagId}"].tag-item`);
+                if (tagElement) {
+                    tagElement.classList.remove('selected');
+                }
+                updateSelectedTagsDisplay();
+                updateSearchButton();
+            });
+        });
+    }
+
+    function updateSearchButton() {
+        const btn = document.getElementById('btn-search-execute');
+        if (btn) {
+            btn.disabled = searchSelectedTags.length === 0;
+        }
+    }
+
+    function clearSelectedTags() {
+        searchSelectedTags = [];
+        document.querySelectorAll('.tag-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+        updateSelectedTagsDisplay();
+        updateSearchButton();
+    }
+
+    function executeTagSearch() {
+        const selectedTagIds = searchSelectedTags.map(t => t.id);
+        const searchUrl = `consultar.html?tags=${selectedTagIds.join(',')}`;
+        window.location.href = searchUrl;
+    }
+
+    // Función auxiliar para manejar etiquetas
+    function getDocumentTags(doc) {
+        if (doc.tags_array && Array.isArray(doc.tags_array)) {
+            return doc.tags_array.map(tag => Number(tag));
+        }
+        
+        if (!doc || !doc.tags) return [];
+        
+        if (Array.isArray(doc.tags)) {
+            return doc.tags.map(tag => Number(tag));
+        }
+        
+        if (typeof doc.tags === 'number' || typeof doc.tags === 'string') {
+            return [Number(doc.tags)];
+        }
+        
+        return [Number(doc.tags)];
+    }
+}
+
+// Call additional initialization functions - MOVED TO MAIN DOMContentLoaded
 

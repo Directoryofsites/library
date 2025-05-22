@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acerca de - Lumen Logos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .about-hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .about-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .about-hero p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .about-content {
+            padding: 80px 0;
+        }
+        
+        .about-section {
+            margin-bottom: 60px;
+        }
+        
+        .about-section h2 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+        }
+        
+        .about-section h3 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .about-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--tertiary-color);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h4 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .stats-section {
+            background: var(--secondary-color);
+            padding: 60px 0;
+            margin: 60px 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            text-align: center;
+        }
+        
+        .stat-item {
+            color: var(--primary-color);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .vision-mission {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 50px;
+            margin-top: 50px;
+        }
+        
+        .vision-card, .mission-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .team-section {
+            background: #f8f9fa;
+            padding: 80px 0;
+        }
+        
+        .quote-section {
+            background: var(--primary-color);
+            color: white;
+            padding: 60px;
+            text-align: center;
+            margin: 60px 0;
+            border-radius: 15px;
+        }
+        
+        .quote-text {
+            font-size: 1.5rem;
+            font-style: italic;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 20px;
+        }
+        
+        .quote-reference {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="main-header">
+                <div class="logo">
+                    <img src="images/logo1.png" alt="Lumen Logos">
+                    <div class="logo-text">
+                        <h1>Lumen Logos</h1>
+                        <p>La Luz del Verbo</p>
+                    </div>
+                </div>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Principal</a></li>
+                        <li><a href="about.html" class="active">Acerca de</a></li>
+                        <li><a href="programs.html">CONOCIMIENTO</a></li>
+                        <li><a href="faculty.html">Enlaces</a></li>
+                        <li><a href="admissions.html">Títulos</a></li>
+                        <li><a href="resources.html">Buscar</a></li>
+                        <li><a href="contact.html">Contacto</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <div class="container">
+            <h1>Acerca de Lumen Logos</h1>
+            <p>"En Él estaba la vida, y la vida era la luz de los hombres. La luz en las tinieblas resplandece, y las tinieblas no prevalecieron contra ella." - Juan 1:4-5</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="about-content">
+        <div class="container">
+            
+            <!-- Nuestra Historia -->
+            <div class="about-section">
+                <h2>Nuestra Historia</h2>
+                <div class="about-text">
+                    <p>Lumen Logos nació de una visión clara: crear un espacio digital donde el conocimiento teológico y bíblico pueda ser compartido, preservado y accesible para toda la comunidad cristiana. En un mundo donde la información fluye constantemente, reconocimos la necesidad de una biblioteca digital especializada que sirviera como faro de sabiduría espiritual.</p>
+                    
+                    <p>El nombre "Lumen Logos" proviene del latín y significa "La Luz del Verbo", haciendo referencia directa a Cristo como la Palabra hecha carne y la luz que ilumina a todo hombre. Este nombre encapsula perfectamente nuestra misión: ser un canal através del cual la luz de la Palabra de Dios pueda brillar y alcanzar a quienes buscan un conocimiento más profundo de las Escrituras.</p>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <section class="stats-section">
+                <div class="container">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">100+</div>
+                            <div class="stat-label">Documentos Teológicos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">15+</div>
+                            <div class="stat-label">Categorías Temáticas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">Etiquetas Especializadas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">Acceso Disponible</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visión y Misión -->
+            <div class="about-section">
+                <h2>Nuestra Visión y Misión</h2>
+                <div class="vision-mission">
+                    <div class="vision-card">
+                        <h3><i class="fas fa-eye feature-icon"></i>Nuestra Visión</h3>
+                        <p>Ser la biblioteca digital teológica de referencia en español, donde estudiantes, pastores, teólogos y cristianos comprometidos encuentren recursos de calidad para profundizar en su fe y conocimiento bíblico.</p>
+                    </div>
+                    <div class="mission-card">
+                        <h3><i class="fas fa-heart feature-icon"></i>Nuestra Misión</h3>
+                        <p>Democratizar el acceso al conocimiento teológico mediante una plataforma colaborativa que preserve, organice y comparta recursos bíblicos y doctrinales de alta calidad, fomentando el crecimiento espiritual e intelectual de la comunidad cristiana.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Qué Ofrecemos -->
+            <div class="about-section">
+                <h2>¿Qué Ofrecemos?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-book-open feature-icon"></i>
+                        <h4>Biblioteca Digital Completa</h4>
+                        <p>Una colección cuidadosamente curada de documentos teológicos, estudios bíblicos, sermones y recursos doctrinales organizados por categorías y etiquetas temáticas.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-search feature-icon"></i>
+                        <h4>Búsqueda Avanzada</h4>
+                        <p>Sistema de búsqueda inteligente que permite encontrar contenido por título, contenido, categorías y etiquetas múltiples para localizar exactamente lo que necesitas.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-users feature-icon"></i>
+                        <h4>Plataforma Colaborativa</h4>
+                        <p>Espacio donde contribuidores autorizados pueden compartir sus estudios y recursos, enriqueciendo continuamente nuestra biblioteca digital.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-tags feature-icon"></i>
+                        <h4>Organización Inteligente</h4>
+                        <p>Sistema de categorización avanzado con etiquetas múltiples que facilita la navegación y descubrimiento de contenido relacionado.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-mobile-alt feature-icon"></i>
+                        <h4>Acceso Multiplataforma</h4>
+                        <p>Diseño responsivo que permite acceder a todos los recursos desde cualquier dispositivo: computadora, tablet o teléfono móvil.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt feature-icon"></i>
+                        <h4>Contenido Verificado</h4>
+                        <p>Todos los recursos pasan por un proceso de revisión para asegurar la calidad teológica y la fidelidad a las Escrituras.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cita Bíblica -->
+            <div class="quote-section">
+                <div class="quote-text">
+                    "Procura con diligencia presentarte a Dios aprobado, como obrero que no tiene de qué avergonzarse, que usa bien la palabra de verdad."
+                </div>
+                <div class="quote-reference">2 Timoteo 2:15</div>
+            </div>
+
+            <!-- Nuestros Valores -->
+            <div class="about-section">
+                <h2>Nuestros Valores Fundamentales</h2>
+                <div class="about-text">
+                    <h3><i class="fas fa-bible"></i> Fidelidad Bíblica</h3>
+                    <p>Comprometidos con la autoridad e inerrancia de las Sagradas Escrituras como fundamento de toda doctrina y práctica cristiana.</p>
+                    
+                    <h3><i class="fas fa-handshake"></i> Accesibilidad</h3>
+                    <p>Creemos que el conocimiento teológico debe estar disponible para todos, eliminando barreras económicas y geográficas.</p>
+                    
+                    <h3><i class="fas fa-heart-o"></i> Excelencia</h3>
+                    <p>Nos esforzamos por mantener los más altos estándares de calidad en cada recurso que compartimos.</p>
+                    
+                    <h3><i class="fas fa-hands-helping"></i> Colaboración</h3>
+                    <p>Fomentamos un espíritu de colaboración donde diferentes ministerios y estudiosos puedan contribuir al crecimiento común.</p>
+                    
+                    <h3><i class="fas fa-seedling"></i> Crecimiento Continuo</h3>
+                    <p>Comprometidos con el desarrollo constante de la plataforma y la expansión de nuestros recursos.</p>
+                </div>
+            </div>
+
+            <!-- Para Quién Es -->
+            <div class="about-section">
+                <h2>¿Para Quién Es Lumen Logos?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-graduation-cap feature-icon"></i>
+                        <h4>Estudiantes de Teología</h4>
+                        <p>Recursos académicos y fuentes confiables para investigación y estudio teológico formal.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-church feature-icon"></i>
+                        <h4>Pastores y Líderes</h4>
+                        <p>Material para preparación de sermones, estudios bíblicos y formación ministerial.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-chalkboard-teacher feature-icon"></i>
+                        <h4>Maestros y Educadores</h4>
+                        <p>Recursos didácticos para enseñanza bíblica en iglesias, seminarios y escuelas cristianas.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <i class="fas fa-user-friends feature-icon"></i>
+                        <h4>Cristianos Comprometidos</h4>
+                        <p>Creyentes que desean profundizar en su conocimiento bíblico y crecimiento espiritual.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compromiso Doctrinal -->
+            <div class="about-section">
+                <h2>Nuestro Compromiso Doctrinal</h2>
+                <div class="about-text">
+                    <p>Lumen Logos se fundamenta en las doctrinas esenciales del cristianismo histórico y ortodoxo. Afirmamos:</p>
+                    
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li style="margin-bottom: 15px;"><i class="fas fa-check" style="color: var(--primary-color); margin-right: 10px;"></i><strong>La autoridad e inspiración de las Sagradas Escrituras</strong> como Palabra de Dios</li>
+                        <li style="margin-bottom: 15px;"><i class="fas fa-check" style="color: var(--primary-color); margin-right: 10px;"></i><strong>La Trinidad</strong>: Un Dios en tres personas (Padre, Hijo y Espíritu Santo)</li>
+                        <li style="margin-bottom: 15px;"><i class="fas fa-check" style="color: var(--primary-color); margin-right: 10px;"></i><strong>La divinidad y humanidad de Jesucristo</strong>, nuestro Salvador</li>
+                        <li style="margin-bottom: 15px;"><i class="fas fa-check" style="color: var(--primary-color); margin-right: 10px;"></i><strong>La salvación por gracia mediante la fe</strong> en Cristo Jesús</li>
+                        <li style="margin-bottom: 15px;"><i class="fas fa-check" style="color: var(--primary-color); margin-right: 10px;"></i><strong>La resurrección corporal</strong> de Jesucristo y su segunda venida</li>
+                        <li style="margin-bottom: 15px;"><i class="fas fa-check" style="color: var(--primary-color); margin-right: 10px;"></i><strong>La iglesia universal</strong> como cuerpo de Cristo</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Llamado a la Acción -->
+            <div class="about-section">
+                <h2>Únete a Nuestra Comunidad</h2>
+                <div class="about-text" style="text-align: center;">
+                    <p>Te invitamos a explorar, aprender y crecer junto a nosotros. Lumen Logos es más que una biblioteca digital; es una comunidad de creyentes unidos por el amor a la Palabra de Dios y el deseo de conocer más profundamente a nuestro Señor y Salvador Jesucristo.</p>
+                    
+                    <p style="font-style: italic; font-size: 1.2rem; color: var(--primary-color); margin-top: 30px;">
+                        "Porque donde están dos o tres congregados en mi nombre, allí estoy yo en medio de ellos." - Mateo 18:20
+                    </p>
+                    
+                    <div style="margin-top: 40px;">
+                        <a href="consultar.html" class="btn" style="background-color: var(--primary-color); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: 600; margin-right: 20px;">Explorar Biblioteca</a>
+                        <a href="contact.html" class="btn" style="background-color: var(--secondary-color); color: var(--primary-color); padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: 600; border: 2px solid var(--primary-color);">Contáctanos</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <img src="images/logo1.png" alt="Lumen Logos">
+                    </div>
+                    <div class="footer-contact">
+                        <div class="footer-contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <p>En línea</p>
+                                <p>Disponible 24/7</p>
+                            </div>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <p>info@lumenlogos.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h3 class="footer-title">Links rápidos</h3>
+                    <ul>
+                        <li><a href="about.html">Acerca de nosotros</a></li>
+                        <li><a href="consultar.html">Consultar biblioteca</a></li>
+                        <li><a href="alimentar.html">Contribuir contenido</a></li>
+                        <li><a href="contact.html">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3 class="footer-title">Recursos</h3>
+                    <ul>
+                        <li><a href="consultar.html">Biblioteca Digital</a></li>
+                        <li><a href="#">Estudios Bíblicos</a></li>
+                        <li><a href="#">Recursos Doctrinales</a></li>
+                        <li><a href="#">Centro de ayuda</a></li>
+                    </ul>
+                </div>
+                <div class="footer-newsletter">
+                    <h3 class="footer-title">Versículo del día</h3>
+                    <p>"La lámpara es a mis pies tu palabra, y lumbrera a mi camino."</p>
+                    <p style="font-style: italic; font-size: 0.9rem;">- Salmos 119:105</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Lumen Logos - La Luz del Verbo. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/scripts.js"></script>
+</body>
+</html>

@@ -218,11 +218,11 @@
     <section class="page-content" style="margin-top: 150px; padding: 50px 0;">
         <div class="container">
             <div class="upload-container">
-                <h2 class="text-center mb-4">Carga Masiva de Documentos Word</h2>
+                <h2 class="text-center mb-4">Carga Masiva de Documentos</h2>
                 <p class="text-center text-muted mb-4">
-                    Selecciona múltiples archivos Word (.docx) para cargarlos automáticamente a la biblioteca digital.
-                    El nombre del archivo será el título, los primeros 710 caracteres serán la descripción.
-                </p>
+    Selecciona múltiples archivos Word (.docx) o PDF (.pdf) para cargarlos automáticamente a la biblioteca digital.
+    El nombre del archivo será el título, los primeros 700 caracteres del contenido serán la descripción.
+</p>
                 
                 <!-- Authentication Check -->
                 <div id="auth-warning" class="alert alert-warning" style="display: none; padding: 15px; margin-bottom: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px;">
@@ -234,8 +234,8 @@
                 <div id="file-drop-zone" class="file-drop-zone">
                     <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: var(--primary-color); margin-bottom: 15px;"></i>
                     <h3>Arrastra archivos Word aquí o haz clic para seleccionar</h3>
-                    <p>Acepta archivos .docx únicamente</p>
-                    <input type="file" id="file-input" class="file-input" multiple accept=".docx">
+                    <p>Acepta archivos .docx y .pdf</p>
+                    <input type="file" id="file-input" class="file-input" multiple accept=".docx,.pdf">
                 </div>
                 
                 <!-- File List -->
@@ -289,6 +289,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <script>
         // Configuración de Supabase
@@ -403,18 +404,24 @@
         
         // Procesar archivos seleccionados
         function processFiles(files) {
-            const docxFiles = files.filter(file => file.name.toLowerCase().endsWith('.docx'));
+
+            const supportedFiles = files.filter(file => {
+    const fileName = file.name.toLowerCase();
+    return fileName.endsWith('.docx') || fileName.endsWith('.pdf');
+});
+
+if (supportedFiles.length === 0) {
+    alert('Por favor, selecciona archivos .docx o .pdf');
+    return;
+}
+
+if (supportedFiles.length !== files.length) {
+    const docxCount = supportedFiles.filter(f => f.name.toLowerCase().endsWith('.docx')).length;
+    const pdfCount = supportedFiles.filter(f => f.name.toLowerCase().endsWith('.pdf')).length;
+    alert(`Se seleccionaron ${supportedFiles.length} archivos compatibles (${docxCount} .docx, ${pdfCount} .pdf) de ${files.length} archivos totales.`);
+}
             
-            if (docxFiles.length === 0) {
-                alert('Por favor, selecciona solo archivos .docx');
-                return;
-            }
-            
-            if (docxFiles.length !== files.length) {
-                alert(`Se seleccionaron ${docxFiles.length} archivos .docx de ${files.length} archivos totales. Solo se procesarán los archivos .docx.`);
-            }
-            
-            selectedFiles = [...selectedFiles, ...docxFiles];
+            selectedFiles = [...selectedFiles, ...supportedFiles];
             updateFileList();
             startUploadBtn.disabled = selectedFiles.length === 0 || isProcessing;
         }
@@ -479,7 +486,7 @@
                     statusElement.textContent = 'Procesando...';
                     statusElement.className = 'file-status status-processing';
                     
-                    await processWordFile(file);
+                 await processFile(file);
                     
                     statusElement.textContent = 'Completado';
                     statusElement.className = 'file-status status-success';
@@ -510,7 +517,7 @@
                 reader.onload = async function(e) {
                     try {
                         // Convertir Word a HTML con mammoth
-                        const result = await mammoth.convertToHtml(e.target.result);
+                        const result = await mammoth.convertToHtml({arrayBuffer: e.target.result});
                         const htmlContent = result.value;
                         
                         // Extraer texto plano para la descripción
@@ -518,10 +525,20 @@
                         tempDiv.innerHTML = htmlContent;
                         const plainText = tempDiv.textContent || tempDiv.innerText || '';
                         
-                        // Preparar datos del documento
-                        const title = file.name.replace('.docx', '');
-                        const description = plainText.substring(0, 710).trim();
-                        const content = htmlContent;
+                       // Preparar datos del documento
+const title = file.name.replace('.docx', '');
+
+// Extraer descripción excluyendo el título y tomando 700 caracteres del cuerpo
+let bodyText = plainText;
+// Si el texto plano comienza con el título, removerlo
+if (bodyText.toLowerCase().startsWith(title.toLowerCase())) {
+    bodyText = bodyText.substring(title.length).trim();
+}
+// Si después del título hay signos de puntuación o espacios, limpiarlos
+bodyText = bodyText.replace(/^[:\-\.\s]+/, '').trim();
+
+const description = bodyText.substring(0, 700).trim();
+const content = htmlContent;
                         
                         // Guardar en Supabase
                         const { data, error } = await supabase
@@ -553,6 +570,121 @@
             });
         }
         
+// Función general para procesar archivos (Word o PDF)
+async function processFile(file) {
+    const fileName = file.name.toLowerCase();
+    
+    if (fileName.endsWith('.docx')) {
+        return await processWordFile(file);
+    } else if (fileName.endsWith('.pdf')) {
+        return await processPdfFile(file);
+    } else {
+        throw new Error('Tipo de archivo no soportado');
+    }
+}
+
+// Procesar archivo PDF individual
+async function processPdfFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = async function(e) {
+            try {
+                // Configurar PDF.js
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                
+                // Cargar el PDF
+                const pdf = await pdfjsLib.getDocument({data: e.target.result}).promise;
+                let fullText = '';
+                
+               // Extraer texto de todas las páginas preservando estructura
+for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const textContent = await page.getTextContent();
+    
+    // Procesar elementos de texto con información de posición para detectar párrafos
+    let pageText = '';
+    let lastY = null;
+    let lastHeight = null;
+    
+    textContent.items.forEach((item, index) => {
+        const currentY = item.transform[5]; // Posición Y
+        const currentHeight = item.height;
+        
+        // Detectar salto de línea significativo (nuevo párrafo)
+        if (lastY !== null) {
+            const yDifference = Math.abs(lastY - currentY);
+            
+            // Si hay un salto vertical grande, es probablemente un nuevo párrafo
+            if (yDifference > (lastHeight * 1.5)) {
+                pageText += '\n\n';
+            }
+            // Si hay un salto menor, es una nueva línea dentro del mismo párrafo
+            else if (yDifference > (lastHeight * 0.5)) {
+                pageText += '\n';
+            }
+            // Si no hay salto vertical significativo, agregar espacio
+            else if (item.str.trim() !== '' && !pageText.endsWith(' ') && !item.str.startsWith(' ')) {
+                pageText += ' ';
+            }
+        }
+        
+        pageText += item.str;
+        lastY = currentY;
+        lastHeight = currentHeight;
+    });
+    
+    fullText += pageText + '\n\n'; // Separador entre páginas
+}
+                
+                // Preparar datos del documento
+                const title = file.name.replace('.pdf', '');
+                
+                // Extraer descripción excluyendo el título y tomando 700 caracteres del cuerpo
+                let bodyText = fullText.trim();
+                // Si el texto comienza con el título, removerlo
+                if (bodyText.toLowerCase().startsWith(title.toLowerCase())) {
+                    bodyText = bodyText.substring(title.length).trim();
+                }
+                // Si después del título hay signos de puntuación o espacios, limpiarlos
+                bodyText = bodyText.replace(/^[:\-\.\s]+/, '').trim();
+                
+                const description = bodyText.substring(0, 700).trim();
+                
+                // Para PDFs, convertir a HTML preservando estructura de párrafos
+const content = convertTextToFormattedHtml(fullText);
+                
+                // Guardar en Supabase
+                const { data, error } = await supabase
+                    .from('documents')
+                    .insert({
+                        title: title,
+                        description: description,
+                        content: content,
+                        tags: null,
+                        tags_array: [],
+                        file_name: file.name,
+                        storage_path: null,
+                        file_url: null,
+                        file_type: 'pdf',
+                        created_at: new Date().toISOString()
+                    });
+                
+                if (error) throw error;
+                
+                resolve(data);
+                
+            } catch (error) {
+                console.error('Error procesando PDF:', file.name, error);
+                reject(error);
+            }
+        };
+        
+        reader.onerror = () => reject(new Error('Error al leer el archivo PDF'));
+        reader.readAsArrayBuffer(file);
+    });
+}
+
         // Actualizar progreso
         function updateProgress() {
             const percentage = (processedCount / totalFiles) * 100;
@@ -599,6 +731,45 @@
             checkAuthentication();
             addLogEntry('Sesión cerrada', 'info');
         }
+
+// Convertir texto plano a HTML con formato mejorado
+function convertTextToFormattedHtml(text) {
+    // Limpiar texto y dividir en párrafos
+    const paragraphs = text
+        .trim()
+        .split(/\n\s*\n/) // Dividir por dobles saltos de línea
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+    
+    let html = '';
+    
+    paragraphs.forEach(paragraph => {
+        // Reemplazar saltos de línea simples con espacios
+        let cleanParagraph = paragraph.replace(/\n/g, ' ').trim();
+        
+        // Detectar títulos (párrafos cortos, mayúsculas, etc.)
+        if (cleanParagraph.length < 100 && 
+            (cleanParagraph === cleanParagraph.toUpperCase() || 
+             /^[0-9]+\.?\s/.test(cleanParagraph) ||
+             cleanParagraph.split(' ').length <= 8)) {
+            html += `<h3 style="margin-top: 20px; margin-bottom: 10px; font-weight: bold; color: #2a3855;">${cleanParagraph}</h3>\n`;
+        }
+        // Detectar listas (párrafos que empiezan con números, letras o viñetas)
+        else if (/^[\s]*[•\-\*\d+\w+]\s/.test(cleanParagraph)) {
+            html += `<li style="margin-bottom: 5px;">${cleanParagraph.replace(/^[\s]*[•\-\*\d+\w+]\s/, '')}</li>\n`;
+        }
+        // Párrafo normal
+        else {
+            html += `<p style="margin-bottom: 15px; line-height: 1.6;">${cleanParagraph}</p>\n`;
+        }
+    });
+    
+    // Envolver listas detectadas en elementos <ul>
+    html = html.replace(/(<li[^>]*>.*?<\/li>\s*)+/gs, '<ul style="margin-bottom: 15px; padding-left: 20px;">$&</ul>');
+    
+    return `<div style="font-family: 'Open Sans', sans-serif; line-height: 1.6;">${html}</div>`;
+}
+
     </script>
 </body>
 </html>

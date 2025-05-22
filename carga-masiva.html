@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga Masiva - Lumen Logos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .upload-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .file-drop-zone {
+            border: 3px dashed var(--primary-color);
+            border-radius: 10px;
+            padding: 50px 20px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-drop-zone:hover {
+            background-color: #e9ecef;
+            border-color: var(--secondary-color);
+        }
+        
+        .file-drop-zone.dragover {
+            background-color: #e3f2fd;
+            border-color: var(--secondary-color);
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-list {
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 3px;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .file-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .file-status {
+            margin-left: 10px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .status-processing {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .status-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-error {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .upload-controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .log-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-success {
+            color: #28a745;
+        }
+        
+        .log-error {
+            color: #dc3545;
+        }
+        
+        .log-info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="main-header">
+                <div class="logo">
+                    <img src="images/logo1.png" alt="Lumen Logos">
+                    <div class="logo-text">
+                        <h1>Lumen Logos</h1>
+                        <p>La Luz del Verbo</p>
+                    </div>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Principal</a></li>
+                        <li><a href="alimentar.html">Contribuir</a></li>
+                        <li><a href="consultar.html">Consultar</a></li>
+                        <li><a href="#" id="login-btn">Logearse</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="page-content" style="margin-top: 150px; padding: 50px 0;">
+        <div class="container">
+            <div class="upload-container">
+                <h2 class="text-center mb-4">Carga Masiva de Documentos Word</h2>
+                <p class="text-center text-muted mb-4">
+                    Selecciona múltiples archivos Word (.docx) para cargarlos automáticamente a la biblioteca digital.
+                    El nombre del archivo será el título, los primeros 710 caracteres serán la descripción.
+                </p>
+                
+                <!-- Authentication Check -->
+                <div id="auth-warning" class="alert alert-warning" style="display: none; padding: 15px; margin-bottom: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px;">
+                    <strong>Acceso requerido:</strong> Debes iniciar sesión como administrador para usar esta funcionalidad.
+                    <button id="login-from-upload" class="btn btn-primary" style="margin-left: 15px;">Iniciar Sesión</button>
+                </div>
+                
+                <!-- File Drop Zone -->
+                <div id="file-drop-zone" class="file-drop-zone">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: var(--primary-color); margin-bottom: 15px;"></i>
+                    <h3>Arrastra archivos Word aquí o haz clic para seleccionar</h3>
+                    <p>Acepta archivos .docx únicamente</p>
+                    <input type="file" id="file-input" class="file-input" multiple accept=".docx">
+                </div>
+                
+                <!-- File List -->
+                <div id="file-list" class="file-list" style="display: none;">
+                    <h4>Archivos seleccionados:</h4>
+                    <div id="files-container"></div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div id="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <p id="progress-text" class="text-center">0 de 0 archivos procesados</p>
+                </div>
+                
+                <!-- Upload Controls -->
+                <div class="upload-controls">
+                    <button id="start-upload" class="btn btn-primary" disabled>
+                        <i class="fas fa-upload"></i> Iniciar Carga
+                    </button>
+                    <button id="clear-files" class="btn btn-secondary">
+                        <i class="fas fa-trash"></i> Limpiar Lista
+                    </button>
+                </div>
+                
+                <!-- Log Container -->
+                <div id="log-container" class="log-container" style="display: none;">
+                    <h4>Registro de Actividad:</h4>
+                    <div id="log-entries"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="login-modal" style="display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+        <div class="login-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 300px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <span class="close-modal" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h2>Acceso Administrativo</h2>
+            <div class="login-form" style="margin-top: 20px;">
+                <form>
+                    <input type="password" id="admin-password" placeholder="Contraseña" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px;">
+                    <button type="button" id="submit-login" style="width: 100%; padding: 10px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Ingresar</button>
+                </form>
+            </div>
+            <div id="login-error" style="color: #d9534f; margin-top: 10px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://cjhbhfvkcwwpnhqixlwd.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqaGJoZnZrY3d3cG5ocWl4bHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMTk2MjQsImV4cCI6MjA1Nzg5NTYyNH0.Db6b_riMZXmM09Bfav-iHtJBaSMX31j-eGPgnaAbI80';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Variables globales
+        let selectedFiles = [];
+        let processedCount = 0;
+        let totalFiles = 0;
+        let isProcessing = false;
+        
+        // Elementos del DOM
+        const fileDropZone = document.getElementById('file-drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const filesContainer = document.getElementById('files-container');
+        const startUploadBtn = document.getElementById('start-upload');
+        const clearFilesBtn = document.getElementById('clear-files');
+        const progressContainer = document.getElementById('progress-container');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const logContainer = document.getElementById('log-container');
+        const logEntries = document.getElementById('log-entries');
+        const authWarning = document.getElementById('auth-warning');
+        
+        // Verificar autenticación al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            setupEventListeners();
+        });
+        
+        // Verificar si el usuario está autenticado
+        function checkAuthentication() {
+            const isLoggedIn = localStorage.getItem('isAdmin') === 'true';
+            const loginBtn = document.getElementById('login-btn');
+            
+            if (loginBtn) {
+                loginBtn.textContent = isLoggedIn ? 'Cerrar Sesión' : 'Logearse';
+                loginBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (isLoggedIn) {
+                        logout();
+                    } else {
+                        showLoginModal();
+                    }
+                });
+            }
+            
+            if (!isLoggedIn) {
+                authWarning.style.display = 'block';
+                fileDropZone.style.display = 'none';
+            } else {
+                authWarning.style.display = 'none';
+                fileDropZone.style.display = 'block';
+            }
+        }
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Drag and drop
+            fileDropZone.addEventListener('click', () => fileInput.click());
+            fileDropZone.addEventListener('dragover', handleDragOver);
+            fileDropZone.addEventListener('dragleave', handleDragLeave);
+            fileDropZone.addEventListener('drop', handleDrop);
+            
+            // File input
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Botones
+            startUploadBtn.addEventListener('click', startUpload);
+            clearFilesBtn.addEventListener('click', clearFiles);
+            
+            // Login
+            document.getElementById('login-from-upload').addEventListener('click', showLoginModal);
+            document.getElementById('submit-login').addEventListener('click', handleLogin);
+            document.querySelector('.close-modal').addEventListener('click', hideLoginModal);
+            
+            // Enter key en password
+            document.getElementById('admin-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+        }
+        
+        // Manejo de drag and drop
+        function handleDragOver(e) {
+            e.preventDefault();
+            fileDropZone.classList.add('dragover');
+        }
+        
+        function handleDragLeave(e) {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            processFiles(files);
+        }
+        
+        // Manejo de selección de archivos
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            processFiles(files);
+        }
+        
+        // Procesar archivos seleccionados
+        function processFiles(files) {
+            const docxFiles = files.filter(file => file.name.toLowerCase().endsWith('.docx'));
+            
+            if (docxFiles.length === 0) {
+                alert('Por favor, selecciona solo archivos .docx');
+                return;
+            }
+            
+            if (docxFiles.length !== files.length) {
+                alert(`Se seleccionaron ${docxFiles.length} archivos .docx de ${files.length} archivos totales. Solo se procesarán los archivos .docx.`);
+            }
+            
+            selectedFiles = [...selectedFiles, ...docxFiles];
+            updateFileList();
+            startUploadBtn.disabled = selectedFiles.length === 0 || isProcessing;
+        }
+        
+        // Actualizar lista de archivos
+        function updateFileList() {
+            if (selectedFiles.length === 0) {
+                fileList.style.display = 'none';
+                return;
+            }
+            
+            fileList.style.display = 'block';
+            filesContainer.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-status status-pending" id="status-${index}">Pendiente</span>
+                `;
+                filesContainer.appendChild(fileItem);
+            });
+        }
+        
+        // Limpiar archivos
+        function clearFiles() {
+            if (isProcessing) {
+                if (!confirm('¿Estás seguro de que quieres cancelar el proceso actual?')) {
+                    return;
+                }
+            }
+            
+            selectedFiles = [];
+            updateFileList();
+            startUploadBtn.disabled = true;
+            progressContainer.style.display = 'none';
+            logContainer.style.display = 'none';
+            isProcessing = false;
+        }
+        
+        // Iniciar carga
+        async function startUpload() {
+            if (selectedFiles.length === 0) return;
+            
+            isProcessing = true;
+            totalFiles = selectedFiles.length;
+            processedCount = 0;
+            
+            startUploadBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            logContainer.style.display = 'block';
+            logEntries.innerHTML = '';
+            
+            addLogEntry('Iniciando carga masiva...', 'info');
+            
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const statusElement = document.getElementById(`status-${i}`);
+                
+                try {
+                    statusElement.textContent = 'Procesando...';
+                    statusElement.className = 'file-status status-processing';
+                    
+                    await processWordFile(file);
+                    
+                    statusElement.textContent = 'Completado';
+                    statusElement.className = 'file-status status-success';
+                    
+                    addLogEntry(`✓ ${file.name} - Cargado exitosamente`, 'success');
+                    
+                } catch (error) {
+                    statusElement.textContent = 'Error';
+                    statusElement.className = 'file-status status-error';
+                    
+                    addLogEntry(`✗ ${file.name} - Error: ${error.message}`, 'error');
+                }
+                
+                processedCount++;
+                updateProgress();
+            }
+            
+            addLogEntry(`Proceso completado. ${processedCount} de ${totalFiles} archivos procesados.`, 'info');
+            isProcessing = false;
+            startUploadBtn.disabled = false;
+        }
+        
+        // Procesar archivo Word individual
+        async function processWordFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    try {
+                        // Convertir Word a HTML con mammoth
+                        const result = await mammoth.convertToHtml(e.target.result);
+                        const htmlContent = result.value;
+                        
+                        // Extraer texto plano para la descripción
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = htmlContent;
+                        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+                        
+                        // Preparar datos del documento
+                        const title = file.name.replace('.docx', '');
+                        const description = plainText.substring(0, 710).trim();
+                        const content = htmlContent;
+                        
+                        // Guardar en Supabase
+                        const { data, error } = await supabase
+                            .from('documents')
+                            .insert({
+                                title: title,
+                                description: description,
+                                content: content,
+                                tags: null,
+                                tags_array: [],
+                                file_name: file.name,
+                                storage_path: null,
+                                file_url: null,
+                                file_type: 'text',
+                                created_at: new Date().toISOString()
+                            });
+                        
+                        if (error) throw error;
+                        
+                        resolve(data);
+                        
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                
+                reader.onerror = () => reject(new Error('Error al leer el archivo'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        // Actualizar progreso
+        function updateProgress() {
+            const percentage = (processedCount / totalFiles) * 100;
+            progressFill.style.width = `${percentage}%`;
+            progressText.textContent = `${processedCount} de ${totalFiles} archivos procesados`;
+        }
+        
+        // Agregar entrada al log
+        function addLogEntry(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            logEntries.appendChild(entry);
+            logEntries.scrollTop = logEntries.scrollHeight;
+        }
+        
+        // Funciones de autenticación
+        function showLoginModal() {
+            document.getElementById('login-modal').style.display = 'block';
+        }
+        
+        function hideLoginModal() {
+            document.getElementById('login-modal').style.display = 'none';
+            document.getElementById('admin-password').value = '';
+            document.getElementById('login-error').textContent = '';
+        }
+        
+        function handleLogin() {
+            const password = document.getElementById('admin-password').value;
+            const errorElement = document.getElementById('login-error');
+            
+            if (password === 'admin811880+-') {
+                localStorage.setItem('isAdmin', 'true');
+                hideLoginModal();
+                checkAuthentication();
+                addLogEntry('Sesión iniciada correctamente', 'success');
+            } else {
+                errorElement.textContent = 'Contraseña incorrecta';
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('isAdmin');
+            checkAuthentication();
+            addLogEntry('Sesión cerrada', 'info');
+        }
+    </script>
+</body>
+</html>

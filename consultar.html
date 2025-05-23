@@ -345,6 +345,34 @@
     color: #d9534f;
 }
 
+/* Responsive para el filtro de categorías y etiquetas */
+@media (max-width: 768px) {
+    .selector-group {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .category-select, .tag-select {
+        width: 100%;
+    }
+    
+    .add-tag-btn {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 16px;
+    }
+    
+    .filter-box {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .filter-container {
+        justify-content: stretch;
+    }
+}
+
     </style>
 </head>
 <body>

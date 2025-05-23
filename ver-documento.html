@@ -283,10 +283,13 @@
                 </div>
                 
                 <div class="document-actions">
-                    <a href="consultar.html" class="back-btn">
-                        <i class="fas fa-arrow-left"></i> Volver a la biblioteca
-                    </a>
-                </div>
+    <a href="consultar.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Volver a la biblioteca
+    </a>
+    <button id="download-btn" class="back-btn" style="background-color: var(--secondary-color); color: var(--primary-color); margin-left: 15px;">
+        <i class="fas fa-download"></i> Descargar
+    </button>
+</div>
             </div>
         </div>
     </section>
@@ -689,6 +692,81 @@
     
     // Cargar el documento cuando la página esté lista
     document.addEventListener('DOMContentLoaded', loadDocument);
+
+    // Función para descargar el documento
+document.addEventListener('DOMContentLoaded', function() {
+    const downloadBtn = document.getElementById('download-btn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+            downloadDocument();
+        });
+    }
+});
+
+async function downloadDocument() {
+    try {
+        // Obtener los datos del documento actual
+        const { data, error } = await supabase
+            .from('documents')
+            .select('*')
+            .eq('id', documentId)
+            .single();
+            
+        if (error) throw error;
+        
+        if (!data) {
+            alert('No se pudo encontrar el documento para descargar.');
+            return;
+        }
+        
+        // Crear el contenido HTML del documento
+        const documentHTML = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${data.title}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
+        h1 { color: #2a3855; border-bottom: 2px solid #e6b742; padding-bottom: 10px; }
+        .description { font-style: italic; color: #666; margin-bottom: 20px; }
+        .content { margin-top: 20px; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>${data.title}</h1>
+    <div class="description">${data.description}</div>
+    <div class="content">${data.content}</div>
+    <div class="footer">
+        <p>Documento generado desde Lumen Logos - La luz del Verbo</p>
+        <p>Fecha de creación: ${new Date(data.created_at).toLocaleDateString('es-ES')}</p>
+    </div>
+</body>
+</html>`;
+        
+        // Crear un blob con el contenido HTML
+        const blob = new Blob([documentHTML], { type: 'text/html;charset=utf-8' });
+        
+        // Crear un enlace temporal para la descarga
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${data.title}.html`;
+        
+        // Activar la descarga
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Limpiar el objeto URL
+        URL.revokeObjectURL(link.href);
+        
+    } catch (error) {
+        console.error('Error al descargar documento:', error);
+        alert('Ocurrió un error al intentar descargar el documento.');
+    }
+}
 
 // Initialize search menu after page loads
 setTimeout(() => {

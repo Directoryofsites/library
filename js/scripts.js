@@ -527,9 +527,11 @@ function generateGlobalNavigation() {
     return `
         <div class="container">
             <div class="main-header">
+
                 <div class="logo">
-                    <img src="images/logo1.png" alt="Lumen Logos">
+                    <img src="images/logo-lumen-logos.svg" alt="Lumen Logos">
                     <div class="logo-text">
+
                         <h1>La luz del Verbo</h1>
                         <p>Revelación que ilumina el alma</p>
                     </div>

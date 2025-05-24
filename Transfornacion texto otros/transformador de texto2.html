@@ -1,0 +1,714 @@
+        function copyToClipboard() {
+            const output = document.getElementById('formattedOutput');
+            const htmlContent = output.innerHTML;
+            
+            if (!htmlContent || htmlContent.includes('aparecerá aquí')) {
+                alert('Primero formatea un texto para poder copiarlo.');
+                return;
+            }
+
+            navigator.clipboard.writeText(htmlContent).then(() => {
+                alert('HTML copiado al portapapeles. Puedes pegarlo en cualquier editor que soporte HTML.');
+            }).catch(() => {
+                // Fallback para navegadores que no soportan clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = htmlContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('HTML copiado al portapapeles.');
+            });
+        }<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formateador Profesional de Texto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .input-section, .output-section {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .output-section {
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        textarea {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .output-area {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .format-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .checkbox-group label {
+            font-size: 14px;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        /* Estilos para el texto formateado */
+        .formatted-text h1 {
+            font-size: 2.2em;
+            color: #2c3e50;
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            font-weight: 700;
+        }
+
+        .formatted-text h2 {
+            font-size: 1.8em;
+            color: #34495e;
+            margin: 20px 0 12px 0;
+            font-weight: 600;
+        }
+
+        .formatted-text h3 {
+            font-size: 1.4em;
+            color: #495057;
+            margin: 15px 0 10px 0;
+            font-weight: 600;
+        }
+
+        .formatted-text p {
+            margin-bottom: 12px;
+            text-align: justify;
+            color: #212529;
+        }
+
+        .formatted-text .subitem {
+            margin: 8px 0 8px 40px;
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .formatted-text .subitem .label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .formatted-text strong {
+            color: #2c3e50;
+            font-weight: 700;
+        }
+
+        .formatted-text em {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .formatted-text blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 15px 0;
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #495057;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .format-options {
+                justify-content: center;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .loading.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Formateador Profesional de Texto</h1>
+            <p>Transforma cualquier texto plano en contenido con formato profesional</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="section-title">
+                    📝 Texto Original
+                </div>
+                <textarea id="inputText" placeholder="Pega aquí tu texto plano sin formato...
+
+Ejemplo:
+INTRODUCCION
+Este es un texto de ejemplo que no tiene formato. Necesita ser organizado y estructurado profesionalmente.
+
+DESARROLLO
+Los puntos importantes incluyen:
+- Primer punto importante
+- Segundo punto importante
+- Tercer punto importante
+
+CONCLUSION
+El texto ahora tendrá un aspecto mucho más profesional y organizado."></textarea>
+            </div>
+
+            <div class="output-section">
+                <div class="section-title">
+                    ✨ Resultado Formateado
+                </div>
+                <div id="outputArea" class="output-area">
+                    <div class="loading" id="loading">
+                        Procesando texto...
+                    </div>
+                    <div id="formattedOutput" class="formatted-text">
+                        El texto formateado aparecerá aquí...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="formatText()">
+                🎯 Formatear Texto
+            </button>
+            <button class="btn btn-secondary" onclick="copyToClipboard()">
+                📋 Copiar HTML
+            </button>
+            <button class="btn btn-secondary" onclick="downloadHTML()">
+                💾 Descargar HTML
+            </button>
+            <button class="btn btn-secondary" onclick="copyPlainFormatted()">
+                📄 Copiar para Word
+            </button>
+            <button class="btn btn-secondary" onclick="clearAll()">
+                🗑️ Limpiar Todo
+            </button>
+
+            <div class="format-options">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autoDetectTitles" checked>
+                    <label for="autoDetectTitles">Auto-detectar títulos</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="formatLists" checked>
+                    <label for="formatLists">Formatear listas</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="emphasizeKeywords" checked>
+                    <label for="emphasizeKeywords">Enfatizar palabras clave</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatText() {
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) {
+                alert('Por favor, ingresa un texto para formatear.');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('formattedOutput');
+            
+            loading.classList.add('show');
+            output.style.display = 'none';
+
+            setTimeout(() => {
+                const formattedHtml = processText(inputText);
+                output.innerHTML = formattedHtml;
+                output.style.display = 'block';
+                loading.classList.remove('show');
+            }, 500);
+        }
+
+        function processText(text) {
+            const autoDetectTitles = document.getElementById('autoDetectTitles').checked;
+            const formatLists = document.getElementById('formatLists').checked;
+            const emphasizeKeywords = document.getElementById('emphasizeKeywords').checked;
+
+            // Limpiar y normalizar el texto
+            let cleanText = cleanupText(text);
+            
+            // Dividir en líneas para procesamiento
+            let lines = cleanText.split('\n');
+            let formattedContent = '';
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                // Saltar líneas vacías
+                if (!line) continue;
+                
+                // Detectar títulos (texto en mayúsculas)
+                if (autoDetectTitles && isTitle(line)) {
+                    const level = getTitleLevel(line);
+                    formattedContent += `<h${level}>${capitalizeFirst(line.toLowerCase())}</h${level}>\n`;
+                    continue;
+                }
+                
+                // Detectar elementos numerados (1., 2., etc.)
+                if (formatLists && line.match(/^\d+\.\s+/)) {
+                    formattedContent += `<h3>${line}</h3>\n`;
+                    continue;
+                }
+                
+                // Detectar subelementos (a., b., etc.)
+                if (line.match(/^[a-z]\.\s+/)) {
+                    const content = line.substring(2).trim();
+                    const label = line.substring(0, 2);
+                    formattedContent += `<div class="subitem"><span class="label">${label}</span> ${formatInlineText(content, emphasizeKeywords)}</div>\n`;
+                    continue;
+                }
+                
+                // Texto normal
+                formattedContent += `<p>${formatInlineText(line, emphasizeKeywords)}</p>\n`;
+            }
+            
+            return formattedContent;
+        }
+
+        function cleanupText(text) {
+            // Corregir problemas de capitalización al final de palabras
+            text = text.replace(/([a-záéíóúñü]+)([A-ZÁÉÍÓÚÑÜ])(\s|$)/g, function(match, start, end, space) {
+                return start + end.toLowerCase() + space;
+            });
+            
+            // Normalizar espacios
+            text = text.replace(/\r\n/g, '\n');
+            text = text.replace(/\t/g, '    ');
+            
+            return text;
+        }
+
+        function isTitle(line) {
+            // Es título si está en mayúsculas y no tiene puntos ni números al inicio
+            return line === line.toUpperCase() && 
+                   line.length < 100 && 
+                   /^[A-ZÁÉÍÓÚÑÜ\s]+$/.test(line) &&
+                   !line.match(/^\d+\./);
+        }
+
+        function getTitleLevel(line) {
+            if (line.length > 50) return 2;
+            return 1;
+        }
+
+        function capitalizeFirst(text) {
+            return text.charAt(0).toUpperCase() + text.slice(1);
+        }
+
+        function formatInlineText(text, emphasizeKeywords) {
+            if (!emphasizeKeywords) return text;
+
+            // Palabras clave importantes
+            const keywords = [
+                'importante', 'fundamental', 'esencial', 'crítico', 'clave', 'principal',
+                'destacado', 'relevante', 'significativo', 'notable', 'primordial',
+                'conclusión', 'resultado', 'objetivo', 'meta', 'propósito',
+                'ventaja', 'beneficio', 'problema', 'solución', 'recomendación'
+            ];
+
+            let formatted = text;
+
+            // Enfatizar palabras clave
+            keywords.forEach(keyword => {
+                const regex = new RegExp(`\\b(${keyword}s?)\\b`, 'gi');
+                formatted = formatted.replace(regex, '<strong>$1</strong>');
+            });
+
+            // Detectar frases entre comillas para énfasis
+            formatted = formatted.replace(/"([^"]+)"/g, '<em>"$1"</em>');
+            
+            // Detectar referencias bíblicas y darles formato especial
+            formatted = formatted.replace(/\(([^)]*\d+[:\d\-]*)\)/g, '<em>($1)</em>');
+
+            return formatted;
+        }
+
+        function copyPlainFormatted() {
+            const output = document.getElementById('formattedOutput');
+            const htmlContent = output.innerHTML;
+            
+            if (!htmlContent || htmlContent.includes('aparecerá aquí')) {
+                alert('Primero formatea un texto para poder copiarlo.');
+                return;
+            }
+
+            // Crear una versión invisible en el DOM que Word pueda interpretar
+            const hiddenDiv = document.createElement('div');
+            hiddenDiv.innerHTML = htmlContent;
+            hiddenDiv.style.position = 'absolute';
+            hiddenDiv.style.left = '-9999px';
+            hiddenDiv.style.fontFamily = 'Calibri, Arial, sans-serif';
+            hiddenDiv.style.fontSize = '12pt';
+            hiddenDiv.style.lineHeight = '1.6';
+            
+            // Aplicar estilos inline para mejor compatibilidad
+            const h1s = hiddenDiv.querySelectorAll('h1');
+            h1s.forEach(h1 => {
+                h1.style.color = '#2c3e50';
+                h1.style.fontSize = '18pt';
+                h1.style.fontWeight = 'bold';
+                h1.style.borderBottom = '2px solid #3498db';
+                h1.style.paddingBottom = '5px';
+                h1.style.marginBottom = '15px';
+            });
+
+            const h2s = hiddenDiv.querySelectorAll('h2');
+            h2s.forEach(h2 => {
+                h2.style.color = '#34495e';
+                h2.style.fontSize = '16pt';
+                h2.style.fontWeight = 'bold';
+                h2.style.marginTop = '20px';
+                h2.style.marginBottom = '10px';
+            });
+
+            const h3s = hiddenDiv.querySelectorAll('h3');
+            h3s.forEach(h3 => {
+                h3.style.color = '#495057';
+                h3.style.fontSize = '14pt';
+                h3.style.fontWeight = 'bold';
+                h3.style.marginTop = '15px';
+                h3.style.marginBottom = '8px';
+            });
+
+            const ps = hiddenDiv.querySelectorAll('p');
+            ps.forEach(p => {
+                p.style.marginBottom = '10px';
+                p.style.textAlign = 'justify';
+                p.style.color = '#2c3e50';
+            });
+
+            const subitems = hiddenDiv.querySelectorAll('.subitem');
+            subitems.forEach(sub => {
+                sub.style.marginLeft = '30px';
+                sub.style.marginBottom = '8px';
+                sub.style.color = '#495057';
+            });
+
+            const labels = hiddenDiv.querySelectorAll('.label');
+            labels.forEach(label => {
+                label.style.fontWeight = 'bold';
+                label.style.color = '#2c3e50';
+            });
+
+            const strongs = hiddenDiv.querySelectorAll('strong');
+            strongs.forEach(strong => {
+                strong.style.fontWeight = 'bold';
+                strong.style.color = '#2c3e50';
+            });
+
+            const ems = hiddenDiv.querySelectorAll('em');
+            ems.forEach(em => {
+                em.style.fontStyle = 'italic';
+                em.style.color = '#7f8c8d';
+            });
+
+            document.body.appendChild(hiddenDiv);
+
+            // Seleccionar y copiar el contenido formateado
+            const range = document.createRange();
+            range.selectNodeContents(hiddenDiv);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            try {
+                document.execCommand('copy');
+                alert('¡Texto formateado copiado!\n\nAhora ve a Word y pega con Ctrl+V.\nWord debería mantener los formatos automáticamente.');
+            } catch (err) {
+                alert('Error al copiar. Intenta usar el método de descarga de archivo HTML.');
+            }
+
+            // Limpiar
+            selection.removeAllRanges();
+            document.body.removeChild(hiddenDiv);
+        }
+
+        function downloadHTML() {
+            const output = document.getElementById('formattedOutput');
+            const htmlContent = output.innerHTML;
+            
+            if (!htmlContent || htmlContent.includes('aparecerá aquí')) {
+                alert('Primero formatea un texto para poder descargarlo.');
+                return;
+            }
+
+            const fullHTML = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texto Formateado</title>
+    <style>
+        body { 
+            font-family: Calibri, Arial, sans-serif; 
+            line-height: 1.6; 
+            margin: 40px auto; 
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+        }
+        h1 { 
+            color: #2c3e50; 
+            font-size: 24px; 
+            border-bottom: 2px solid #3498db; 
+            padding-bottom: 5px; 
+            margin-bottom: 15px;
+        }
+        h2 { 
+            color: #34495e; 
+            font-size: 20px; 
+            margin: 20px 0 10px 0; 
+        }
+        h3 { 
+            color: #495057; 
+            font-size: 16px; 
+            margin: 15px 0 8px 0; 
+        }
+        p { 
+            margin-bottom: 10px; 
+            text-align: justify; 
+            color: #2c3e50;
+        }
+        .subitem { 
+            margin: 8px 0 8px 30px; 
+            color: #495057;
+        }
+        .label { 
+            font-weight: bold; 
+            color: #2c3e50; 
+        }
+        strong { 
+            color: #2c3e50; 
+            font-weight: bold;
+        }
+        em { 
+            color: #7f8c8d; 
+            font-style: italic; 
+        }
+        @media print {
+            body { margin: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    ${htmlContent}
+</body>
+</html>`;
+
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'texto_formateado.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('Archivo HTML descargado.\n\nPara abrir en Word:\n1. Haz clic derecho en el archivo\n2. Selecciona "Abrir con Microsoft Word"\n3. Word convertirá el formato automáticamente');
+        }
+
+        function clearAll() {
+            if (confirm('¿Estás seguro de que quieres limpiar todo el contenido?')) {
+                document.getElementById('inputText').value = '';
+                document.getElementById('formattedOutput').innerHTML = 'El texto formateado aparecerá aquí...';
+            }
+        }
+
+        // Formatear automáticamente cuando se pega texto
+        document.getElementById('inputText').addEventListener('paste', function() {
+            setTimeout(() => {
+                if (this.value.trim()) {
+                    formatText();
+                }
+            }, 100);
+        });
+
+        // Ejemplo automático al cargar
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const exampleText = `AMPLIACIÓN CARTA A LOS GÁLATAS
+
+INTRODUCCIÓN A LA CARTA A LOS GÁLATAS
+
+1. Contexto histórico y ubicación en la historia universal
+a. Ubicación cronológica precisa
+La carta a los Gálatas fue escrita por el apóstol Pablo, probablemente entre los años 48 y 55 d.C., lo que la convierte en una de sus epístolas más tempranas, si no la más antigua. Este período corresponde a la era apostólica temprana, después del primer viaje misionero de Pablo y antes del Concilio de Jerusalén (Hechos 15)
+b. Situación política y social
+
+Galacia era una región del centro-norte de Asia Menor (actual Turquía), poblada por celtas (galos) y posteriormente colonizada por Roma.`;
+                
+                document.getElementById('inputText').value = exampleText;
+                formatText();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+toma el super prompt y aplicalo al texto que te adjunto... me daras asi; 1. Un titulo aporpiado a l contenido del texto. 2. Un apendice de exactamente 750 carctaeres (ni mas nimenos) 
+que refleje con exactitud con que se van a aencontrra los lectores. 3. el desarollo de lprompr como tal con todas las partes que deben ser desarolladas con el pormpt

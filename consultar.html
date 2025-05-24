@@ -456,20 +456,20 @@
                         <div class="footer-contact-item">
                             <i class="fas fa-map-marker-alt"></i>
                             <div>
-                                <p>123 Seminary Drive</p>
-                                <p>Ciudad, CP 12345</p>
+                                <p></p>
+                                <p></p>
                             </div>
                         </div>
                         <div class="footer-contact-item">
                             <i class="fas fa-phone"></i>
                             <div>
-                                <p>+123 456 7890</p>
+                                <p></p>
                             </div>
                         </div>
                         <div class="footer-contact-item">
                             <i class="fas fa-envelope"></i>
                             <div>
-                                <p>info@lumenlogos.com</p>
+                                <p></p>
                             </div>
                         </div>
                     </div>
@@ -540,15 +540,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
         await loadCategories();
         
-        // Verificar si hay etiquetas preseleccionadas desde el menú de búsqueda
-        checkForPreselectedTags();
+        // Verificar si hay parámetros de URL (etiquetas o fechas)
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasDateFilter = urlParams.get('date_type');
+        const hasTagFilter = urlParams.get('tags');
         
-        await loadDocuments();
+        if (hasDateFilter) {
+            // Si hay filtro de fecha, procesarlo primero
+            checkForDateFilters();
+        } else if (hasTagFilter) {
+            // Si hay filtro de etiquetas, procesarlo
+            checkForPreselectedTags();
+        } else {
+            // Si no hay filtros, cargar documentos normalmente
+            await loadDocuments();
+        }
+        
     } catch (error) {
         console.error('Error al cargar datos iniciales:', error);
         loadSampleData();
     }
-});
+});    
 
 // Re-initialize search menu after page loads
 setTimeout(() => {
@@ -601,6 +613,209 @@ function checkForPreselectedTags() {
             setTimeout(() => {
                 applyFilters();
             }, 500); // Pequeño delay para asegurar que todo esté cargado
+        }
+    }
+}
+
+// Verificar si hay filtros de fecha desde la URL
+        checkForDateFilters();
+
+// Filtrar documentos por año
+async function filterDocumentsByYear(year) {
+    try {
+        console.log('Filtrando documentos por año:', year);
+        
+        // Crear fechas de inicio y fin del año
+        const startDate = `${year}-01-01T00:00:00`;
+        const endDate = `${year}-12-31T23:59:59`;
+        
+        const { data, error } = await supabase
+            .from('documents')
+            .select('*')
+            .gte('created_at', startDate)
+            .lte('created_at', endDate)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const filteredDocs = data || [];
+        console.log(`Documentos encontrados en ${year}:`, filteredDocs.length);
+        
+        // Actualizar resultados
+        allDocuments = filteredDocs;
+        totalDocuments = filteredDocs.length;
+        renderDocuments(filteredDocs.slice(0, documentsPerPage));
+        generatePagination(totalDocuments, documentsPerPage, 1);
+        currentPage = 1;
+        
+        // Mostrar mensaje informativo
+        showDateFilterMessage(`Mostrando documentos del año ${year} (${filteredDocs.length} resultados)`);
+        
+    } catch (error) {
+        console.error('Error al filtrar por año:', error);
+        showDateFilterMessage('Error al aplicar filtro de año', true);
+    }
+}
+
+// Filtrar documentos por mes
+async function filterDocumentsByMonth(year, month) {
+    try {
+        console.log('Filtrando documentos por mes:', `${month}/${year}`);
+        
+        // Crear fechas de inicio y fin del mes
+        const startDate = `${year}-${month.toString().padStart(2, '0')}-01T00:00:00`;
+        const lastDay = new Date(year, month, 0).getDate();
+        const endDate = `${year}-${month.toString().padStart(2, '0')}-${lastDay}T23:59:59`;
+        
+        const { data, error } = await supabase
+            .from('documents')
+            .select('*')
+            .gte('created_at', startDate)
+            .lte('created_at', endDate)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const filteredDocs = data || [];
+        const monthNames = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
+                           'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        
+        console.log(`Documentos encontrados en ${monthNames[month]} ${year}:`, filteredDocs.length);
+        
+        // Actualizar resultados
+        allDocuments = filteredDocs;
+        totalDocuments = filteredDocs.length;
+        renderDocuments(filteredDocs.slice(0, documentsPerPage));
+        generatePagination(totalDocuments, documentsPerPage, 1);
+        currentPage = 1;
+        
+        // Mostrar mensaje informativo
+        showDateFilterMessage(`Mostrando documentos de ${monthNames[month]} ${year} (${filteredDocs.length} resultados)`);
+        
+    } catch (error) {
+        console.error('Error al filtrar por mes:', error);
+        showDateFilterMessage('Error al aplicar filtro de mes', true);
+    }
+}
+
+// Filtrar documentos por día específico
+async function filterDocumentsByDay(date) {
+    try {
+        console.log('Filtrando documentos por día:', date);
+        
+        // Crear fechas de inicio y fin del día
+        const startDate = `${date}T00:00:00`;
+        const endDate = `${date}T23:59:59`;
+        
+        const { data, error } = await supabase
+            .from('documents')
+            .select('*')
+            .gte('created_at', startDate)
+            .lte('created_at', endDate)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const filteredDocs = data || [];
+        console.log(`Documentos encontrados el ${date}:`, filteredDocs.length);
+        
+        // Actualizar resultados
+        allDocuments = filteredDocs;
+        totalDocuments = filteredDocs.length;
+        renderDocuments(filteredDocs.slice(0, documentsPerPage));
+        generatePagination(totalDocuments, documentsPerPage, 1);
+        currentPage = 1;
+        
+        // Formatear fecha para mostrar
+        const dateObj = new Date(date);
+        const formattedDate = dateObj.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        // Mostrar mensaje informativo
+        showDateFilterMessage(`Mostrando documentos del ${formattedDate} (${filteredDocs.length} resultados)`);
+        
+    } catch (error) {
+        console.error('Error al filtrar por día:', error);
+        showDateFilterMessage('Error al aplicar filtro de día', true);
+    }
+}
+
+// Mostrar mensaje informativo de filtro de fecha
+function showDateFilterMessage(message, isError = false) {
+    // Remover mensaje anterior si existe
+    const existingMessage = document.querySelector('.date-filter-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Crear nuevo mensaje
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `date-filter-message ${isError ? 'error' : 'info'}`;
+    messageDiv.style.cssText = `
+        background-color: ${isError ? '#f8d7da' : '#d1ecf1'};
+        color: ${isError ? '#721c24' : '#0c5460'};
+        padding: 10px 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: 500;
+        border: 1px solid ${isError ? '#f5c6cb' : '#bee5eb'};
+    `;
+    
+    messageDiv.innerHTML = `
+        <i class="fas fa-${isError ? 'exclamation-triangle' : 'info-circle'}"></i> 
+        ${message}
+        <button onclick="this.parentElement.remove()" style="
+            float: right; 
+            background: none; 
+            border: none; 
+            color: inherit; 
+            cursor: pointer;
+            font-size: 16px;
+        ">×</button>
+    `;
+    
+    // Insertar después del contenedor de búsqueda
+    const searchContainer = document.querySelector('.search-container');
+    searchContainer.insertAdjacentElement('afterend', messageDiv);
+    
+    // Auto-remover después de 10 segundos si no es error
+    if (!isError) {
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.remove();
+            }
+        }, 10000);
+    }
+}
+
+// Función para manejar filtros de fecha desde URL
+function checkForDateFilters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateType = urlParams.get('date_type');
+    
+    if (dateType) {
+        console.log('Filtro de fecha detectado:', dateType);
+        
+        if (dateType === 'year') {
+            const year = urlParams.get('year');
+            if (year) {
+                filterDocumentsByYear(parseInt(year));
+            }
+        } else if (dateType === 'month') {
+            const year = urlParams.get('year');
+            const month = urlParams.get('month');
+            if (year && month) {
+                filterDocumentsByMonth(parseInt(year), parseInt(month));
+            }
+        } else if (dateType === 'day') {
+            const date = urlParams.get('date');
+            if (date) {
+                filterDocumentsByDay(date);
+            }
         }
     }
 }

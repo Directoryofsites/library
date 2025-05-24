@@ -252,8 +252,10 @@
     <section class="page-content" style="margin-top: 150px; padding: 50px 0;">
         <div class="container">
             <div class="document-container">
+
                 <div class="document-actions">
                     <button id="edit-tags-btn" class="btn btn-primary">Editar Etiquetas</button>
+                    <button id="edit-document-btn" class="btn btn-secondary" style="margin-left: 10px;">Editar Documento</button>
                 </div>
                 
                 <div class="document-header">
@@ -387,13 +389,15 @@
         window.location.href = 'consultar.html';
     }
 
-    // Controlar visibilidad del botón de editar según estado de login
+    // Controlar visibilidad de los botones de editar según estado de login
     document.addEventListener('DOMContentLoaded', function() {
         const isAdmin = localStorage.getItem('isAdmin') === 'true';
         const editTagsBtn = document.getElementById('edit-tags-btn');
+        const editDocumentBtn = document.getElementById('edit-document-btn');
         
         if (!isAdmin) {
             editTagsBtn.style.display = 'none';
+            editDocumentBtn.style.display = 'none';
         }
     });
 
@@ -401,6 +405,12 @@
     document.getElementById('edit-tags-btn').addEventListener('click', function() {
         const documentId = getDocumentIdFromUrl();
         window.location.href = `editar-documento.html?id=${documentId}`;
+    });
+
+    // Agregar evento al botón de editar documento
+    document.getElementById('edit-document-btn').addEventListener('click', function() {
+        const documentId = getDocumentIdFromUrl();
+        window.location.href = `editar-contenido.html?id=${documentId}`;
     });
 
     // Función auxiliar para obtener el ID del documento de la URL

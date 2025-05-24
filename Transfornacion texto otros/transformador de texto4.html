@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formateador Profesional de Texto</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configurar PDF.js
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .input-section, .output-section {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .output-section {
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        textarea {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .output-area {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .format-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .checkbox-group label {
+            font-size: 14px;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        /* Estilos para el texto formateado */
+        .formatted-text h1 {
+            font-size: 2.8em;
+            color: #000000;
+            margin: 30px 0 20px 0;
+            font-weight: 800;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            text-align: center;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.2;
+        }
+
+        .formatted-text h2 {
+            font-size: 2.2em;
+            color: #000000;
+            margin: 25px 0 15px 0;
+            font-weight: 700;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+            line-height: 1.3;
+        }
+
+        .formatted-text h3 {
+            font-size: 1.8em;
+            color: #000000;
+            margin: 20px 0 12px 0;
+            font-weight: 600;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            position: relative;
+            padding-left: 25px;
+            line-height: 1.4;
+        }
+
+        .formatted-text h3::before {
+            content: "📋";
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 0.8em;
+        }
+
+        .formatted-text p {
+            margin-bottom: 12px;
+            text-align: justify;
+            color: #2c3e50;
+            line-height: 1.8;
+            text-indent: 20px;
+        }
+
+        .formatted-text p:first-letter {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .formatted-text .subitem {
+            margin: 8px 0 8px 40px;
+            color: #495057;
+            line-height: 1.6;
+            position: relative;
+            padding: 8px 12px;
+            background: linear-gradient(90deg, #f1f2f6 0%, #ffffff 100%);
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .formatted-text .subitem .label {
+            font-weight: 600;
+            color: #2c3e50;
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
+
+        .formatted-text strong {
+            color: #e74c3c;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ffeaa7, #fab1a0);
+            padding: 2px 4px;
+            border-radius: 4px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .formatted-text em {
+            color: #8e44ad;
+            font-style: italic;
+            background: linear-gradient(45deg, #e8f4fd, #dda0dd);
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+
+        .formatted-text blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 15px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px 20px;
+            border-radius: 0 15px 15px 0;
+            font-style: italic;
+            color: #495057;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .formatted-text .keyword-highlight {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 5px rgba(243, 156, 18, 0.4);
+        }
+
+        .formatted-text .biblical-reference {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 25px;
+            font-style: italic;
+            font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(155, 89, 182, 0.4);
+        }
+
+        .formatted-text .important-concept {
+            position: relative;
+            background: linear-gradient(135deg, #ff7675, #fd79a8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 118, 117, 0.4);
+        }
+
+        /* Estilos para carga de archivos */
+        .file-upload-area {
+            margin-bottom: 20px;
+        }
+
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .upload-zone:hover {
+            border-color: #3498db;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+            transform: translateY(-2px);
+        }
+
+        .upload-zone.dragover {
+            border-color: #2ecc71;
+            background: linear-gradient(135deg, #d4edda 0%, #f8f9fa 100%);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .upload-zone p {
+            margin: 5px 0;
+            color: #495057;
+        }
+
+        .upload-zone strong {
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #e3f2fd;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #3498db;
+        }
+
+        .btn-clear {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .btn-clear:hover {
+            background: #c0392b;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #dee2e6;
+        }
+
+        .divider span {
+            background: #f8f9fa;
+            padding: 0 15px;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .processing-status {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .processing-status.show {
+            display: block;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .format-options {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Formateador Profesional de Texto</h1>
+            <p>Transforma cualquier texto plano en contenido con formato profesional</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="section-title">
+                    📝 Texto Original
+                </div>
+                
+                <!-- Área de carga de archivos -->
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📁</div>
+                        <p><strong>Haz clic aquí para subir un archivo</strong></p>
+                        <p>PDF, DOCX, TXT, HTML, RTF</p>
+                        <p>o arrastra y suelta el archivo aquí</p>
+                        <p style="font-size: 0.9em; color: #666; margin-top: 8px;">
+                            📋 Para PDFs: Solo funciona con PDFs que tienen texto seleccionable
+                        </p>
+                    </div>
+                    <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.html,.rtf,.doc" style="display: none;">
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <span id="fileName"></span>
+                        <button onclick="clearFile()" class="btn-clear">❌</button>
+                    </div>
+                </div>
+
+                <div class="divider">
+                    <span>O</span>
+                </div>
+
+                <textarea id="inputText" placeholder="Pega aquí tu texto plano sin formato...
+
+Ejemplo:
+INTRODUCCION
+Este es un texto de ejemplo que no tiene formato. Necesita ser organizado y estructurado profesionalmente.
+
+DESARROLLO
+Los puntos importantes incluyen:
+- Primer punto importante
+- Segundo punto importante
+- Tercer punto importante
+
+CONCLUSION
+El texto ahora tendrá un aspecto mucho más profesional y organizado."></textarea>
+            </div>
+
+            <div class="output-section">
+                <div class="section-title">
+                    ✨ Resultado Formateado
+                </div>
+                <div id="outputArea" class="output-area">
+                    <div class="processing-status" id="processingStatus">
+                        Procesando archivo...
+                    </div>
+                    <div class="error-message" id="errorMessage">
+                        Error al procesar el archivo.
+                    </div>
+                    <div class="loading" id="loading">
+                        Procesando texto...
+                    </div>
+                    <div id="formattedOutput" class="formatted-text">
+                        El texto formateado aparecerá aquí...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="formatText()">
+                🎯 Formatear Texto
+            </button>
+            <button class="btn btn-secondary" onclick="copyPlainFormatted()">
+                📄 Copiar para Word
+            </button>
+            <button class="btn btn-secondary" onclick="downloadHTML()">
+                💾 Descargar HTML
+            </button>
+            <button class="btn btn-secondary" onclick="clearAll()">
+                🗑️ Limpiar Todo
+            </button>
+
+            <div class="format-options">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autoDetectTitles" checked>
+                    <label for="autoDetectTitles">Auto-detectar títulos</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="formatLists" checked>
+                    <label for="formatLists">Formatear listas</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="emphasizeKeywords" checked>
+                    <label for="emphasizeKeywords">Enfatizar palabras clave</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="intelligentStyling" checked>
+                    <label for="intelligentStyling">🎨 Estilado inteligente</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="smartColors" checked>
+                    <label for="smartColors">🌈 Colores automáticos</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let fileUploadInitialized = false;
+
+        // Función principal de formateo
+        function formatText() {
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) {
+                alert('Por favor, ingresa un texto para formatear.');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('formattedOutput');
+            
+            loading.classList.add('show');
+            output.style.display = 'none';
+
+            setTimeout(() => {
+                const formattedHtml = processText(inputText);
+                output.innerHTML = formattedHtml;
+                output.style.display = 'block';
+                loading.classList.remove('show');
+            }, 500);
+        }
+
+        function processText(text) {
+            const autoDetectTitles = document.getElementById('autoDetectTitles').checked;
+            const formatLists = document.getElementById('formatLists').checked;
+            const emphasizeKeywords = document.getElementById('emphasizeKeywords').checked;
+            const intelligentStyling = document.getElementById('intelligentStyling').checked;
+            const smartColors = document.getElementById('smartColors').checked;
+
+            // Limpiar y normalizar el texto
+            let cleanText = cleanupText(text);
+            
+            // Dividir en líneas para procesamiento
+            let lines = cleanText.split('\n');
+            let formattedContent = '';
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                // Saltar líneas vacías
+                if (!line) continue;
+                
+                // Detectar títulos (texto en mayúsculas)
+                if (autoDetectTitles && isTitle(line)) {
+                    const level = getTitleLevel(line);
+                    formattedContent += `<h${level}>${capitalizeFirst(line.toLowerCase())}</h${level}>\n`;
+                    continue;
+                }
+                
+                // Detectar elementos numerados (1., 2., etc.)
+                if (formatLists && line.match(/^\d+\.\s+/)) {
+                    formattedContent += `<h3>${line}</h3>\n`;
+                    continue;
+                }
+                
+                // Detectar subelementos (a., b., etc.)
+                if (line.match(/^[a-z]\.\s+/)) {
+                    const content = line.substring(2).trim();
+                    const label = line.substring(0, 2);
+                    const enhancedContent = enhanceContentIntelligently(content, intelligentStyling, smartColors);
+                    formattedContent += `<div class="subitem"><span class="label">${label}</span> ${enhancedContent}</div>\n`;
+                    continue;
+                }
+                
+                // Texto normal con mejoras inteligentes
+                const enhancedContent = enhanceContentIntelligently(line, intelligentStyling, smartColors);
+                formattedContent += `<p>${enhancedContent}</p>\n`;
+            }
+            
+            return formattedContent;
+        }
+
+        function enhanceContentIntelligently(text, intelligentStyling, smartColors) {
+            let enhanced = text;
+            
+            if (!intelligentStyling && !smartColors) {
+                return formatInlineText(enhanced, document.getElementById('emphasizeKeywords').checked);
+            }
+            
+            // Detectar y mejorar referencias bíblicas
+            enhanced = enhanced.replace(/\(([^)]*[A-Za-z]+\s+\d+[:\d\-]*)\)/g, 
+                '<span class="biblical-reference">($1)</span>');
+            
+            // Detectar años y fechas importantes
+            enhanced = enhanced.replace(/\b(\d{1,2}\s+y\s+\d{1,2}\s+d\.C\.)\b/g, 
+                '<span class="keyword-highlight">$1</span>');
+            
+            // Detectar nombres propios importantes
+            const importantNames = [
+                'Pablo', 'Galacia', 'Gálatas', 'Jerusalén', 'Roma', 'Asia Menor', 
+                'Turquía', 'Concilio', 'apóstol', 'epístola', 'carta'
+            ];
+            
+            importantNames.forEach(name => {
+                const regex = new RegExp(`\\b(${name})\\b`, 'gi');
+                enhanced = enhanced.replace(regex, '<span class="keyword-highlight">$1</span>');
+            });
+            
+            // Aplicar formato básico
+            enhanced = formatInlineText(enhanced, true);
+            
+            return enhanced;
+        }
+
+        function cleanupText(text) {
+            // Corregir problemas de capitalización al final de palabras
+            text = text.replace(/\b([a-záéíóúñü]+)([A-ZÁÉÍÓÚÑÜ])(\s|$)/g, function(match, start, end, space) {
+                return start + end.toLowerCase() + space;
+            });
+            
+            // Normalizar espacios
+            text = text.replace(/\r\n/g, '\n');
+            text = text.replace(/\t/g, '    ');
+            
+            return text;
+        }
+
+        function isTitle(line) {
+            return line === line.toUpperCase() && 
+                   line.length < 100 && 
+                   /^[A-ZÁÉÍÓÚÑÜ\s]+$/.test(line) &&
+                   !line.match(/^\d+\./);
+        }
+
+        function getTitleLevel(line) {
+            if (line.length > 50) return 2;
+            return 1;
+        }
+
+        function capitalizeFirst(text) {
+            return text.charAt(0).toUpperCase() + text.slice(1);
+        }
+
+        function formatInlineText(text, emphasizeKeywords) {
+            if (!emphasizeKeywords) return text;
+
+            const keywords = [
+                'importante', 'fundamental', 'esencial', 'crítico', 'clave', 'principal',
+                'destacado', 'relevante', 'significativo', 'notable', 'primordial',
+                'conclusión', 'resultado', 'objetivo', 'meta', 'propósito',
+                'ventaja', 'beneficio', 'problema', 'solución', 'recomendación'
+            ];
+
+            let formatted = text;
+
+            keywords.forEach(keyword => {
+                const regex = new RegExp(`\\b(${keyword}s?)\\b`, 'gi');
+                formatted = formatted.replace(regex, '<strong>$1</strong>');
+            });
+
+            formatted = formatted.replace(/"([^"]+)"/g, '<em>"$1"</em>');
+            formatted = formatted.replace(/\(([^)]*\d+[:\d\-]*)\)/g, '<em>($1)</em>');
+
+            return formatted;
+        }
+
+        function copyPlainFormatted() {
+            const output = document.getElementById('formattedOutput');
+            const htmlContent = output.innerHTML;
+            
+            if (!htmlContent || htmlContent.includes('aparecerá aquí')) {
+                alert('Primero formatea un texto para poder copiarlo.');
+                return;
+            }
+
+            const hiddenDiv = document.createElement('div');
+            hiddenDiv.innerHTML = htmlContent;
+            hiddenDiv.style.position = 'absolute';
+            hiddenDiv.style.left = '-9999px';
+            hiddenDiv.style.fontFamily = 'Calibri, Arial, sans-serif';
+            hiddenDiv.style.fontSize = '12pt';
+            hiddenDiv.style.lineHeight = '1.6';
+            
+            document.body.appendChild(hiddenDiv);
+
+            const range = document.createRange();
+            range.selectNodeContents(hiddenDiv);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            try {
+                document.execCommand('copy');
+                alert('¡Texto formateado copiado!\n\nAhora ve a Word y pega con Ctrl+V.');
+            } catch (err) {
+                alert('Error al copiar. Intenta usar el método de descarga de archivo HTML.');
+            }
+
+            selection.removeAllRanges();
+            document.body.removeChild(hiddenDiv);
+        }
+
+        function downloadHTML() {
+            const output = document.getElementById('formattedOutput');
+            const htmlContent = output.innerHTML;
+            
+            if (!htmlContent || htmlContent.includes('aparecerá aquí')) {
+                alert('Primero formatea un texto para poder descargarlo.');
+                return;
+            }
+
+            const fullHTML = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Texto Formateado</title>
+    <style>
+        body { font-family: Calibri, Arial, sans-serif; line-height: 1.6; margin: 40px auto; max-width: 800px; padding: 20px; }
+        h1 { color: #000000; font-size: 24px; font-weight: 800; text-align: center; margin: 30px 0 20px 0; }
+        h2 { color: #000000; font-size: 20px; font-weight: 700; border-left: 5px solid #3498db; padding-left: 15px; }
+        h3 { color: #000000; font-size: 16px; font-weight: 600; }
+        p { margin-bottom: 10px; text-align: justify; color: #2c3e50; }
+        .subitem { margin: 8px 0 8px 30px; padding: 8px; background: #f1f2f6; border-left: 4px solid #e74c3c; }
+        .label { font-weight: bold; background: #3498db; color: white; padding: 2px 8px; border-radius: 15px; }
+        strong { color: #e74c3c; font-weight: bold; }
+        em { color: #8e44ad; font-style: italic; }
+    </style>
+</head>
+<body>
+    ${htmlContent}
+</body>
+</html>`;
+
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'texto_formateado.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAll() {
+            if (confirm('¿Estás seguro de que quieres limpiar todo el contenido?')) {
+                document.getElementById('inputText').value = '';
+                document.getElementById('formattedOutput').innerHTML = 'El texto formateado aparecerá aquí...';
+                clearFile();
+            }
+        }
+
+        function clearFile() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.querySelector('.upload-zone').style.display = 'block';
+            document.getElementById('processingStatus').classList.remove('show');
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        // Inicialización de carga de archivos
+        function initFileUpload() {
+            if (fileUploadInitialized) return;
+            
+            const fileInput = document.getElementById('fileInput');
+            const uploadZone = document.querySelector('.upload-zone');
+            
+            if (!fileInput || !uploadZone) return;
+            
+            uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+            
+            fileUploadInitialized = true;
+        }
+
+        function handleFile(file) {
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            
+            if (file.size > maxSize) {
+                showError('El archivo es demasiado grande. Máximo 10MB.');
+                return;
+            }
+
+            const allowedExtensions = /\.(pdf|docx|doc|txt|html|htm|rtf)$/i;
+            if (!allowedExtensions.test(file.name)) {
+                showError('Tipo de archivo no soportado. Use PDF, DOCX, DOC, TXT, HTML o RTF.');
+                return;
+            }
+
+            // Mostrar información del archivo
+            const fileName = document.getElementById('fileName');
+            const fileInfo = document.getElementById('fileInfo');
+            const uploadZone = document.querySelector('.upload-zone');
+            
+            fileName.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            fileInfo.style.display = 'flex';
+            uploadZone.style.display = 'none';
+
+            // Procesar archivo
+            processFile(file);
+        }
+
+        async function processFile(file) {
+            showProcessing('Procesando archivo...');
+            hideError();
+
+            try {
+                let text = '';
+                
+                if (file.name.match(/\.(txt|html|htm)$/i)) {
+                    text = await readTextFile(file);
+                    if (file.name.match(/\.(html|htm)$/i)) {
+                        text = cleanHTML(text);
+                    }
+                } else if (file.name.match(/\.pdf$/i)) {
+                    text = await processPDF(file);
+                } else if (file.name.match(/\.(docx|doc)$/i)) {
+                    text = await processWord(file);
+                } else if (file.name.endsWith('.rtf')) {
+                    text = await readTextFile(file);
+                    text = cleanRTF(text);
+                }
+
+                if (text && text.trim().length > 10) {
+                    document.getElementById('inputText').value = text;
+                    hideProcessing();
+                    showProcessing('Aplicando formato...');
+                    setTimeout(() => {
+                        formatText();
+                        hideProcessing();
+                    }, 800);
+                } else {
+                    showError('No se pudo extraer texto del archivo o el archivo está vacío.');
+                }
+
+            } catch (error) {
+                console.error('Error procesando archivo:', error);
+                showError(`Error al procesar el archivo: ${error.message}`);
+            }
+        }
+
+        function readTextFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+
+        async function processWord(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                
+                if (typeof mammoth !== 'undefined') {
+                    const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+                    if (result.value && result.value.trim()) {
+                        return result.value;
+                    } else {
+                        throw new Error('No se pudo extraer texto del documento');
+                    }
+                } else {
+                    throw new Error('Librería mammoth no disponible');
+                }
+            } catch (error) {
+                console.error('Error procesando Word:', error);
+                throw new Error('No se pudo procesar el archivo Word');
+            }
+        }
+
+        async function processPDF(file) {
+            try {
+                if (typeof pdfjsLib === 'undefined') {
+                    throw new Error('PDF.js no está disponible');
+                }
+
+                showProcessing('Cargando PDF...');
+                const arrayBuffer = await file.arrayBuffer();
+                
+                showProcessing('Extrayendo texto del PDF...');
+                const loadingTask = pdfjsLib.getDocument({
+                    data: arrayBuffer,
+                    cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+                    cMapPacked: true
+                });
+                
+                const pdf = await loadingTask.promise;
+                let allLines = [];
+                
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    showProcessing(`Procesando página ${pageNum} de ${pdf.numPages}...`);
+                    
+                    const page = await pdf.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    
+                    // Extraer cada elemento de texto por separado
+                    const pageLines = textContent.items
+                        .map(item => item.str.trim())
+                        .filter(line => line.length > 0);
+                    
+                    allLines.push(...pageLines);
+                }
+                
+                if (allLines.length === 0) {
+                    throw new Error('El PDF no contiene texto extraíble. Puede ser un PDF de solo imágenes.');
+                }
+                
+                // Reconstruir el texto uniendo líneas relacionadas
+                const reconstructedText = reconstructLinesFromPDF(allLines);
+                
+                return reconstructedText;
+                
+            } catch (error) {
+                console.error('Error procesando PDF:', error);
+                if (error.message.includes('texto extraíble')) {
+                    throw new Error('Este PDF contiene solo imágenes. Necesitas un PDF con texto seleccionable.');
+                } else {
+                    throw new Error(`Error al procesar PDF: ${error.message}`);
+                }
+            }
+        }
+
+        function reconstructLinesFromPDF(lines) {
+            let reconstructed = [];
+            let i = 0;
+            
+            while (i < lines.length) {
+                let currentLine = lines[i];
+                
+                // Detectar si la línea actual es un número/letra suelto
+                if (isNumberOrLetterAlone(currentLine)) {
+                    // Buscar la siguiente línea que tenga contenido
+                    let nextContentIndex = i + 1;
+                    while (nextContentIndex < lines.length && !lines[nextContentIndex].trim()) {
+                        nextContentIndex++;
+                    }
+                    
+                    if (nextContentIndex < lines.length) {
+                        // Unir el número/letra con su contenido
+                        const combinedLine = currentLine + ' ' + lines[nextContentIndex];
+                        reconstructed.push(combinedLine);
+                        i = nextContentIndex + 1; // Saltar la línea que ya procesamos
+                    } else {
+                        reconstructed.push(currentLine);
+                        i++;
+                    }
+                } else {
+                    reconstructed.push(currentLine);
+                    i++;
+                }
+            }
+            
+            // Unir líneas que parecen continuación de párrafos
+            return joinContinuationLines(reconstructed);
+        }
+
+        function isNumberOrLetterAlone(line) {
+            // Detectar si una línea es solo un número, letra con punto, o viñeta
+            return /^\d+\.$/.test(line) || 
+                   /^[a-z]\.$/.test(line) || 
+                   /^●$/.test(line) || 
+                   /^•$/.test(line) || 
+                   /^-$/.test(line) ||
+                   /^\*$/.test(line);
+        }
+
+        function joinContinuationLines(lines) {
+            let result = [];
+            let currentParagraph = '';
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                if (!line) continue;
+                
+                // Si la línea es un título (mayúsculas), elemento numerado o viñeta, terminar párrafo anterior
+                if (isTitle(line) || 
+                    line.match(/^\d+\.\s/) || 
+                    line.match(/^[a-z]\.\s/) ||
+                    line.match(/^[●•\-\*]\s/)) {
+                    
+                    if (currentParagraph) {
+                        result.push(currentParagraph);
+                        currentParagraph = '';
+                    }
+                    result.push(line);
+                } 
+                // Si la línea parece continuación de párrafo
+                else if (currentParagraph && !line.match(/^[A-Z]/) && !line.endsWith('.')) {
+                    currentParagraph += ' ' + line;
+                }
+                // Si la línea termina en punto, cerrar párrafo
+                else if (line.endsWith('.') || line.endsWith('!') || line.endsWith('?')) {
+                    if (currentParagraph) {
+                        currentParagraph += ' ' + line;
+                        result.push(currentParagraph);
+                        currentParagraph = '';
+                    } else {
+                        result.push(line);
+                    }
+                }
+                // Comenzar nuevo párrafo
+                else {
+                    if (currentParagraph) {
+                        result.push(currentParagraph);
+                    }
+                    currentParagraph = line;
+                }
+            }
+            
+            // Agregar último párrafo si existe
+            if (currentParagraph) {
+                result.push(currentParagraph);
+            }
+            
+            return result.join('\n\n');
+        }
+
+        function cleanPDFText(text) {
+            let cleaned = text
+                // Eliminar caracteres extraños comunes en PDFs
+                .replace(/[^\x20-\x7E\u00A0-\u024F\u1E00-\u1EFF\n\r]/g, ' ')
+                .trim();
+
+            // Reconstruir la estructura del texto PDF
+            cleaned = reconstructPDFStructure(cleaned);
+            
+            return cleaned;
+        }
+
+        function reconstructPDFStructure(text) {
+            // Paso 1: Normalizar y limpiar
+            let reconstructed = text
+                .replace(/[^\x20-\x7E\u00A0-\u024F\u1E00-\u1EFF\n\r]/g, ' ')
+                .replace(/\r\n/g, '\n')
+                .replace(/\r/g, '\n');
+
+            // Paso 2: Unir números/letras sueltos con su contenido
+            reconstructed = reconstructed
+                // Unir números sueltos con punto en línea separada
+                .replace(/(\d+\.)\s*\n\s*([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü])/g, '$1 $2')
+                
+                // Unir letras sueltas con punto en línea separada  
+                .replace(/([a-z]\.)\s*\n\s*([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü])/g, '$1 $2')
+                
+                // Unir palabras cortadas al final de línea
+                .replace(/([a-záéíóúñü])\s*\n\s*([a-záéíóúñü])/g, '$1$2')
+                
+                // Normalizar espacios múltiples
+                .replace(/\s+/g, ' ');
+
+            // Paso 3: Detectar y separar elementos estructurales
+            reconstructed = reconstructed
+                // Separar títulos principales (texto en mayúsculas largo)
+                .replace(/\b([A-ZÁÉÍÓÚÑÜ]{5,}(?:\s+[A-ZÁÉÍÓÚÑÜ]{3,})*)\s+([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü])/g, '$1\n\n$2')
+                
+                // Separar elementos numerados del texto anterior
+                .replace(/([.!?])\s+(\d+\.\s*[A-ZÁÉÍÓÚÑÜ])/g, '$1\n\n$2')
+                .replace(/([a-záéíóúñü])\s+(\d+\.\s*[A-ZÁÉÍÓÚÑÜ])/g, '$1\n\n$2')
+                
+                // Separar subelementos del texto anterior
+                .replace(/([.!?])\s+([a-z]\.\s*[A-ZÁÉÍÓÚÑÜ])/g, '$1\n$2')
+                .replace(/([a-záéíóúñü])\s+([a-z]\.\s*[A-ZÁÉÍÓÚÑÜ])/g, '$1\n$2')
+                
+                // Separar párrafos por puntos finales
+                .replace(/([.!?])\s+([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]{2,})/g, '$1\n\n$2')
+                
+                // Separar referencias bíblicas del texto siguiente
+                .replace(/(\([^)]*\d+[:\d\-]*\))\s*([a-z]\.\s*[A-ZÁÉÍÓÚÑÜ])/g, '$1\n$2')
+                .replace(/(\([^)]*\d+[:\d\-]*\))\s*([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü])/g, '$1\n\n$2')
+                
+                // Limpiar múltiples saltos de línea
+                .replace(/\n{3,}/g, '\n\n')
+                .replace(/^\n+|\n+$/g, '');
+
+            return reconstructed;
+        }
+
+        function processText(text) {
+            const autoDetectTitles = document.getElementById('autoDetectTitles').checked;
+            const formatLists = document.getElementById('formatLists').checked;
+            const emphasizeKeywords = document.getElementById('emphasizeKeywords').checked;
+            const intelligentStyling = document.getElementById('intelligentStyling').checked;
+            const smartColors = document.getElementById('smartColors').checked;
+
+            // Limpiar y normalizar el texto
+            let cleanText = cleanupText(text);
+            
+            // Dividir en líneas para procesamiento
+            let lines = cleanText.split('\n');
+            let formattedContent = '';
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                // Saltar líneas vacías
+                if (!line) continue;
+                
+                // Detectar títulos (texto en mayúsculas)
+                if (autoDetectTitles && isTitle(line)) {
+                    const level = getTitleLevel(line);
+                    formattedContent += `<h${level}>${capitalizeFirst(line.toLowerCase())}</h${level}>\n`;
+                    continue;
+                }
+                
+                // Detectar elementos numerados (1., 2., etc.)
+                if (formatLists && line.match(/^\d+\.\s+/)) {
+                    formattedContent += `<h3>${line}</h3>\n`;
+                    continue;
+                }
+                
+                // Detectar subelementos (a., b., etc.)
+                if (line.match(/^[a-z]\.\s+/)) {
+                    const content = line.substring(2).trim();
+                    const label = line.substring(0, 2);
+                    const enhancedContent = enhanceContentIntelligently(content, intelligentStyling, smartColors);
+                    formattedContent += `<div class="subitem"><span class="label">${label}</span> ${enhancedContent}</div>\n`;
+                    continue;
+                }
+                
+                // Detectar conceptos importantes o subtítulos cortos
+                if (intelligentStyling && (isImportantConcept(line) || isSubtitle(line))) {
+                    const enhancedContent = enhanceContentIntelligently(line, true, smartColors);
+                    formattedContent += `<h3>${enhancedContent}</h3>\n`;
+                    continue;
+                }
+                
+                // Texto normal con mejoras inteligentes
+                const enhancedContent = enhanceContentIntelligently(line, intelligentStyling, smartColors);
+                formattedContent += `<p>${enhancedContent}</p>\n`;
+            }
+            
+            return formattedContent;
+        }
+
+        function isSubtitle(line) {
+            // Detectar líneas que parecen subtítulos
+            return line.length < 80 && 
+                   line.length > 10 &&
+                   !line.endsWith('.') &&
+                   (line.includes('histórico') || 
+                    line.includes('cronológica') ||
+                    line.includes('política') ||
+                    line.includes('social') ||
+                    line.includes('ubicación') ||
+                    line.includes('contexto'));
+        }
+
+        function isImportantConcept(line) {
+            // Detectar conceptos importantes: líneas cortas, en mayúsculas parciales, o con palabras clave
+            const importantKeywords = [
+                'INTRODUCCIÓN', 'CONCLUSIÓN', 'IMPORTANTE', 'FUNDAMENTAL', 
+                'CONTEXTO', 'SITUACIÓN', 'UBICACIÓN', 'DESARROLLO', 'AMPLIACIÓN'
+            ];
+            
+            return line.length < 100 && 
+                   (importantKeywords.some(keyword => line.toUpperCase().includes(keyword)) ||
+                    line.split(' ').some(word => word === word.toUpperCase() && word.length > 3));
+        }
+
+        function cleanRTF(rtfText) {
+            return rtfText
+                .replace(/\{\\[^}]*\}/g, '')
+                .replace(/\\[a-z]+\d*\s?/g, '')
+                .replace(/\{\}/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function cleanHTML(htmlText) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlText;
+            
+            const scripts = tempDiv.getElementsByTagName('script');
+            const styles = tempDiv.getElementsByTagName('style');
+            
+            for (let i = scripts.length - 1; i >= 0; i--) {
+                scripts[i].remove();
+            }
+            for (let i = styles.length - 1; i >= 0; i--) {
+                styles[i].remove();
+            }
+            
+            let cleanText = tempDiv.textContent || tempDiv.innerText || '';
+            
+            return cleanText
+                .replace(/\s+/g, ' ')
+                .replace(/\n\s*\n/g, '\n\n')
+                .trim();
+        }
+
+        function showProcessing(message) {
+            const processingStatus = document.getElementById('processingStatus');
+            if (processingStatus) {
+                processingStatus.textContent = message;
+                processingStatus.classList.add('show');
+            }
+        }
+
+        function hideProcessing() {
+            const processingStatus = document.getElementById('processingStatus');
+            if (processingStatus) {
+                processingStatus.classList.remove('show');
+            }
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) {
+                errorMessage.textContent = message;
+                errorMessage.classList.add('show');
+            }
+        }
+
+        function hideError() {
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) {
+                errorMessage.classList.remove('show');
+            }
+        }
+
+        // Inicialización al cargar la página
+        window.addEventListener('load', function() {
+            initFileUpload();
+            
+            // Formatear automáticamente cuando se pega texto
+            const inputText = document.getElementById('inputText');
+            if (inputText) {
+                inputText.addEventListener('paste', function() {
+                    setTimeout(() => {
+                        if (this.value.trim()) {
+                            formatText();
+                        }
+                    }, 100);
+                });
+            }
+
+            // Cargar ejemplo automático
+            setTimeout(() => {
+                const exampleText = `AMPLIACIÓN CARTA A LOS GÁLATAS
+
+INTRODUCCIÓN A LA CARTA A LOS GÁLATAS
+
+1. Contexto histórico y ubicación en la historia universal
+a. Ubicación cronológica precisa
+La carta a los Gálatas fue escrita por el apóstol Pablo, probablemente entre los años 48 y 55 d.C., lo que la convierte en una de sus epístolas más tempranas, si no la más antigua. Este período corresponde a la era apostólica temprana, después del primer viaje misionero de Pablo y antes del Concilio de Jerusalén (Hechos 15)
+b. Situación política y social
+
+Galacia era una región del centro-norte de Asia Menor (actual Turquía), poblada por celtas (galos) y posteriormente colonizada por Roma.`;
+                
+                if (inputText && !inputText.value.trim()) {
+                    inputText.value = exampleText;
+                    formatText();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

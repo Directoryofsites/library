@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formateador Profesional de Texto con Procesamiento de PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+        }
+        header {
+            background: #222;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1em;
+            padding: 1em;
+            height: calc(100vh - 70px);
+            box-sizing: border-box;
+        }
+        .input-area, .output-area {
+            background: white;
+            border-radius: 8px;
+            padding: 1em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        .input-area {
+            display: flex;
+            flex-direction: column;
+        }
+        .file-drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 1em;
+            text-align: center;
+            margin-bottom: 1em;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        .file-drop-zone.dragover {
+            border-color: #007BFF;
+            background: #e9f5ff;
+        }
+        textarea {
+            flex-grow: 1;
+            resize: none;
+            width: 100%;
+            min-height: 200px;
+            font-family: monospace;
+            font-size: 1em;
+            padding: 0.5em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .controls {
+            margin-top: 1em;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1em;
+            align-items: center;
+        }
+        .controls label {
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+            font-size: 0.9em;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #clearBtn {
+            background: #dc3545;
+        }
+        #clearBtn:hover {
+            background: #c82333;
+        }
+        .download-buttons {
+            margin-top: 1em;
+            display: flex;
+            gap: 0.5em;
+            flex-wrap: wrap;
+        }
+        .download-buttons button {
+            background: #28a745;
+            font-size: 0.8em;
+            padding: 0.4em 0.8em;
+        }
+        .download-buttons button:hover {
+            background: #1e7e34;
+        }
+        
+        /* Estilos para el contenido formateado */
+        .formatted-content h1 {
+            font-family: Georgia, serif;
+            font-size: 2.8em;
+            color: black;
+            text-align: center;
+            text-transform: uppercase;
+            margin: 0.5em 0;
+        }
+        .formatted-content h2 {
+            font-family: Georgia, serif;
+            font-size: 2.2em;
+            color: black;
+            border-left: 5px solid blue;
+            padding-left: 0.5em;
+            margin: 0.5em 0;
+        }
+        .formatted-content h3 {
+            font-family: Georgia, serif;
+            font-size: 1.8em;
+            color: black;
+            position: relative;
+            padding-left: 2em;
+            margin: 0.5em 0;
+        }
+        .formatted-content h3::before {
+            content: "📋";
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .formatted-content .subitem {
+            background-color: #f0f0f0;
+            border-left: 4px solid red;
+            padding: 0.5em 1em;
+            margin-left: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        .formatted-content .subitem .label {
+            font-weight: bold;
+            margin-right: 0.5em;
+        }
+        .formatted-content .smart-list-item {
+            padding: 0.5em 1em;
+            margin: 0.3em 0;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .formatted-content .smart-list-item:hover {
+            background-color: #e0e0e0;
+        }
+        .formatted-content .biblical-reference {
+            background-color: purple;
+            color: white;
+            border-radius: 15px;
+            padding: 0.2em 0.8em;
+            font-size: 0.9em;
+            display: inline-block;
+            margin: 0 0.2em;
+        }
+        .formatted-content .keyword-highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .formatted-content h1, 
+            .formatted-content h2, 
+            .formatted-content h3 {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Formateador Profesional de Texto con Procesamiento de PDF</h1>
+        <p>Transforma texto plano fragmentado en documentos HTML con formato profesional.</p>
+    </header>
+    <div class="container">
+        <div class="input-area">
+            <div class="file-drop-zone" id="fileDropZone">
+                Arrastra y suelta archivos aquí o haz clic para seleccionar
+                <br><small>Soporta: PDF, DOCX, TXT, HTML, RTF (máx. 10MB)</small>
+            </div>
+            <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.html,.rtf" style="display: none;">
+            <textarea id="inputText" placeholder="Pega o escribe el texto aquí..."></textarea>
+            <div class="controls">
+                <label><input type="checkbox" id="autoDetectTitles" checked> Auto-detectar títulos</label>
+                <label><input type="checkbox" id="formatLists" checked> Formatear listas</label>
+                <label><input type="checkbox" id="highlightKeywords" checked> Enfatizar palabras clave</label>
+                <label><input type="checkbox" id="smartStyling" checked> Estilado inteligente</label>
+                <label><input type="checkbox" id="autoColors" checked> Colores automáticos</label>
+                <button id="processBtn">Procesar Texto</button>
+                <button id="clearBtn">Limpiar Texto</button>
+            </div>
+            <div class="download-buttons">
+                <button id="downloadHTML">Descargar HTML</button>
+                <button id="downloadWord">Copiar para Word</button>
+                <button id="downloadPrint">Vista Impresión</button>
+            </div>
+        </div>
+        <div class="output-area">
+            <div id="outputArea" class="formatted-content">
+                <!-- Resultado formateado aparecerá aquí -->
+                <p style="color: #666; text-align: center; margin-top: 2em;">
+                    El texto formateado aparecerá aquí después del procesamiento.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.4.2/mammoth.browser.min.js"></script>
+    <script>
+        // Configuración de PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Elementos del DOM
+        const fileDropZone = document.getElementById('fileDropZone');
+        const fileInput = document.getElementById('fileInput');
+        const inputText = document.getElementById('inputText');
+        const processBtn = document.getElementById('processBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const outputArea = document.getElementById('outputArea');
+
+        // Función principal de reconstrucción de líneas de PDF
+        function reconstructLinesFromPDF(lines) {
+            const regexNumber = /^\d+\.$/;
+            const regexLetter = /^[a-z]\.$/;
+            const regexBullet = /^[●•\-*]$/;
+            const regexSymbolSpace = /^[\-●•*+]\s*$/;
+
+            let result = [];
+            let i = 0;
+
+            while (i < lines.length) {
+                let line = lines[i].trim();
+                if (line === '') {
+                    i++;
+                    continue;
+                }
+
+                // Verificar si la línea es un elemento suelto
+                if (regexNumber.test(line) || regexLetter.test(line) || regexBullet.test(line) || regexSymbolSpace.test(line)) {
+                    // Unir con la siguiente línea no vacía
+                    let j = i + 1;
+                    while (j < lines.length && lines[j].trim() === '') {
+                        j++;
+                    }
+                    if (j < lines.length) {
+                        line = line + ' ' + lines[j].trim();
+                        i = j + 1;
+                    } else {
+                        i = j;
+                    }
+                } else {
+                    i++;
+                }
+
+                // Corregir defectos de capitalización
+                line = line.replace(/IntroduccióN/gi, 'Introducción');
+                line = line.replace(/GáLatas/gi, 'Gálatas');
+                line = line.replace(/ConclusióN/gi, 'Conclusión');
+                line = line.replace(/AmpliacióN/gi, 'Ampliación');
+
+                result.push(line);
+            }
+
+            return result.join('\n');
+        }
+
+        // Función de formateo inteligente
+        function formatText(text) {
+            const options = {
+                autoDetectTitles: document.getElementById('autoDetectTitles').checked,
+                formatLists: document.getElementById('formatLists').checked,
+                highlightKeywords: document.getElementById('highlightKeywords').checked,
+                smartStyling: document.getElementById('smartStyling').checked,
+                autoColors: document.getElementById('autoColors').checked
+            };
+
+            let lines = text.split('\n').filter(line => line.trim() !== '');
+            let html = '';
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+
+                // Detectar títulos principales (mayúsculas completas)
+                if (options.autoDetectTitles && line === line.toUpperCase() && line.length > 10) {
+                    html += `<h1>${line.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}</h1>\n`;
+                }
+                // Detectar subtítulos (primera palabra en mayúsculas + resto del texto)
+                else if (options.autoDetectTitles && /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]+[a-záéíóúñ]/.test(line)) {
+                    html += `<h2>${line}</h2>\n`;
+                }
+                // Detectar elementos numerados (1., 2., 3., etc.)
+                else if (options.formatLists && /^\d+\.\s/.test(line)) {
+                    const content = line.replace(/^\d+\.\s/, '');
+                    const number = line.match(/^(\d+)\./)[1];
+                    html += `<h3>${number}. ${content}</h3>\n`;
+                }
+                // Detectar subelementos (a., b., c., etc.)
+                else if (options.formatLists && /^[a-z]\.\s/.test(line)) {
+                    const letter = line.match(/^([a-z])\./)[1];
+                    const content = line.replace(/^[a-z]\.\s/, '');
+                    html += `<div class="subitem"><span class="label">${letter}.</span> ${content}</div>\n`;
+                }
+                // Detectar viñetas
+                else if (options.formatLists && /^[●•\-*]\s/.test(line)) {
+                    html += `<div class="smart-list-item">${line}</div>\n`;
+                }
+                // Párrafo normal
+                else {
+                    let processedLine = line;
+                    
+                    // Resaltar referencias bíblicas
+                    if (options.autoColors) {
+                        processedLine = processedLine.replace(/\(([^)]*(?:Hechos|Gálatas|Romanos|Corintios|Efesios|Filipenses|Colosenses|Tesalonicenses|Timoteo|Tito|Filemón|Hebreos|Santiago|Pedro|Juan|Judas|Apocalipsis)[^)]*)\)/g, 
+                            '<span class="biblical-reference">($1)</span>');
+                    }
+                    
+                    // Resaltar palabras clave
+                    if (options.highlightKeywords) {
+                        const keywords = ['Pablo', 'Gálatas', 'Cristo', 'Jesús', 'Evangelio', 'Fe', 'Gracia', 'Ley'];
+                        keywords.forEach(keyword => {
+                            const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                            processedLine = processedLine.replace(regex, `<span class="keyword-highlight">${keyword}</span>`);
+                        });
+                    }
+                    
+                    html += `<p>${processedLine}</p>\n`;
+                }
+            }
+
+            return html;
+        }
+
+        // Manejadores de eventos para carga de archivos
+        fileDropZone.addEventListener('click', () => fileInput.click());
+        fileDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.add('dragover');
+        });
+        fileDropZone.addEventListener('dragleave', () => {
+            fileDropZone.classList.remove('dragover');
+        });
+        fileDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Función para manejar archivos
+        async function handleFile(file) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert('El archivo es demasiado grande. Máximo 10MB.');
+                return;
+            }
+
+            try {
+                let text = '';
+                
+                if (file.type === 'application/pdf') {
+                    text = await extractTextFromPDF(file);
+                } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    text = await extractTextFromDOCX(file);
+                } else if (file.type === 'text/plain' || file.type === 'text/html') {
+                    text = await file.text();
+                } else {
+                    text = await file.text();
+                }
+
+                // Reconstruir líneas si viene de PDF
+                if (file.type === 'application/pdf') {
+                    const lines = text.split('\n');
+                    text = reconstructLinesFromPDF(lines);
+                }
+
+                inputText.value = text;
+            } catch (error) {
+                console.error('Error al procesar archivo:', error);
+                alert('Error al procesar el archivo. Intenta con otro formato.');
+            }
+        }
+
+        // Extraer texto de PDF
+        async function extractTextFromPDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let text = '';
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join('\n');
+                text += pageText + '\n';
+            }
+
+            return text;
+        }
+
+        // Extraer texto de DOCX
+        async function extractTextFromDOCX(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({arrayBuffer});
+            return result.value;
+        }
+
+        // Procesar texto
+        processBtn.addEventListener('click', () => {
+            const text = inputText.value.trim();
+            if (!text) {
+                alert('Por favor, ingresa o carga algún texto para procesar.');
+                return;
+            }
+
+            const formattedHTML = formatText(text);
+            outputArea.innerHTML = formattedHTML;
+        });
+
+        // Botón limpiar - elimina todo el texto de entrada y procesado
+        clearBtn.addEventListener('click', () => {
+            inputText.value = '';
+            outputArea.innerHTML = '<p style="color: #666; text-align: center; margin-top: 2em;">El texto formateado aparecerá aquí después del procesamiento.</p>';
+        });
+
+        // Funciones de descarga
+        document.getElementById('downloadHTML').addEventListener('click', () => {
+            const html = generateCompleteHTML();
+            downloadFile(html, 'documento-formateado.html', 'text/html');
+        });
+
+        // Función corregida para copiar para Word con estilos embebidos
+        document.getElementById('downloadWord').addEventListener('click', () => {
+            const htmlForWord = generateWordHTMLWithStyles();
+            navigator.clipboard.writeText(htmlForWord).then(() => {
+                alert('HTML con estilos copiado al portapapeles. Pégalo en Word.');
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+                alert('Error al copiar. Intenta de nuevo.');
+            });
+        });
+
+        document.getElementById('downloadPrint').addEventListener('click', () => {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(generatePrintHTML());
+            printWindow.document.close();
+            printWindow.print();
+        });
+
+        function generateCompleteHTML() {
+            return `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Formateado</title>
+    <style>
+        ${document.querySelector('style').textContent}
+    </style>
+</head>
+<body>
+    <div class="formatted-content">
+        ${outputArea.innerHTML}
+    </div>
+</body>
+</html>`;
+        }
+
+        // Función mejorada para generar HTML con estilos embebidos para Word
+        function generateWordHTMLWithStyles() {
+            const content = outputArea.innerHTML;
+            
+            // Crear HTML con estilos inline para máxima compatibilidad con Word
+            let styledHTML = content
+                .replace(/<h1>/g, '<h1 style="font-family: Georgia, serif; font-size: 2.8em; color: black; text-align: center; text-transform: uppercase; margin: 0.5em 0;">')
+                .replace(/<h2>/g, '<h2 style="font-family: Georgia, serif; font-size: 2.2em; color: black; border-left: 5px solid blue; padding-left: 0.5em; margin: 0.5em 0;">')
+                .replace(/<h3>/g, '<h3 style="font-family: Georgia, serif; font-size: 1.8em; color: black; margin: 0.5em 0;">')
+                .replace(/<div class="subitem">/g, '<div style="background-color: #f0f0f0; border-left: 4px solid red; padding: 0.5em 1em; margin-left: 1.5em; margin-bottom: 0.5em;">')
+                .replace(/<span class="label">/g, '<span style="font-weight: bold; margin-right: 0.5em;">')
+                .replace(/<div class="smart-list-item">/g, '<div style="padding: 0.5em 1em; margin: 0.3em 0;">')
+                .replace(/<span class="biblical-reference">/g, '<span style="background-color: purple; color: white; border-radius: 15px; padding: 0.2em 0.8em; font-size: 0.9em; display: inline-block; margin: 0 0.2em;">')
+                .replace(/<span class="keyword-highlight">/g, '<span style="background-color: yellow; font-weight: bold;">');
+
+            return `<div style="font-family: Georgia, serif;">${styledHTML}</div>`;
+        }
+
+        function generatePrintHTML() {
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Documento para Imprimir</title>
+    <style>
+        body { font-family: Georgia, serif; margin: 2cm; }
+        h1 { font-size: 24pt; text-align: center; text-transform: uppercase; }
+        h2 { font-size: 18pt; border-left: 5px solid blue; padding-left: 10px; }
+        h3 { font-size: 16pt; }
+        .subitem { background: #f0f0f0; border-left: 4px solid red; padding: 10px; margin-left: 20px; }
+        @media print { body { margin: 1cm; } }
+    </style>
+</head>
+<body>
+    ${outputArea.innerHTML}
+</body>
+</html>`;
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

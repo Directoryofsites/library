@@ -778,6 +778,15 @@ img, svg, video, canvas, iframe {
             font-size: 14px;
         }
 
+        /* Ocultar contenido del footer excepto copyright */
+        .footer-top {
+            display: none !important;
+        }
+        
+        footer {
+            padding-top: 0 !important;
+        }
+
         /* Responsive Styles */
         @media (max-width: 1200px) {
             .features-grid {

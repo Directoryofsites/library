@@ -609,13 +609,15 @@ function generateGlobalNavigation() {
                                             <h4>Buscar por Fecha</h4>
                                         </div>
                                         <div class="date-filters">
-                                            <div class="date-filter-group">
+
+                                           <div class="date-filter-group">
                                                 <label>Buscar por:</label>
                                                 <select id="date-type-select">
                                                     <option value="">Seleccionar tipo</option>
                                                     <option value="year">Año específico</option>
                                                     <option value="month">Mes específico</option>
                                                     <option value="day">Día específico</option>
+                                                    <option value="range">Rango de fechas</option>
                                                 </select>
                                             </div>
                                             
@@ -1062,6 +1064,7 @@ function initSearchMenu() {
                     </select>
                 </div>
             `;
+
         } else if (dateType === 'month') {
             inputsHTML = `
                 <div class="date-input-group">
@@ -1079,17 +1082,30 @@ function initSearchMenu() {
                     </select>
                 </div>
             `;
-        } else if (dateType === 'day') {
+
+       } else if (dateType === 'day') {
             inputsHTML = `
                 <div class="date-input-group">
                     <label>Fecha específica:</label>
                     <input type="date" id="specific-date" />
                 </div>
             `;
+        } else if (dateType === 'range') {
+            inputsHTML = `
+                <div class="date-input-group">
+                    <label>Fecha de inicio:</label>
+                    <input type="date" id="start-date" />
+                </div>
+                <div class="date-input-group">
+                    <label>Fecha de fin:</label>
+                    <input type="date" id="end-date" />
+                </div>
+            `;
         }
         
         dateInputsContainer.innerHTML = inputsHTML;
         updateDateSearchButton();
+
     }
 
     // Generar opciones de años (últimos 5 años + próximos 2)
@@ -1141,11 +1157,22 @@ function initSearchMenu() {
             const year = document.getElementById('year-select')?.value;
             const month = document.getElementById('month-select')?.value;
             isValid = !!year && !!month;
+
         } else if (dateType === 'day') {
             const specificDate = document.getElementById('specific-date')?.value;
             isValid = !!specificDate;
+        } else if (dateType === 'range') {
+            const startDate = document.getElementById('start-date')?.value;
+            const endDate = document.getElementById('end-date')?.value;
+            isValid = !!startDate && !!endDate;
+            
+            // Validar que la fecha de inicio sea anterior a la fecha de fin
+            if (isValid && startDate > endDate) {
+                isValid = false;
+                console.warn('La fecha de inicio debe ser anterior a la fecha de fin');
+            }
         }
-        
+
         searchButton.disabled = !isValid;
     }
 
@@ -1161,9 +1188,14 @@ function initSearchMenu() {
             const year = document.getElementById('year-select').value;
             const month = document.getElementById('month-select').value;
             searchUrl += `date_type=month&year=${year}&month=${month}`;
-        } else if (dateType === 'day') {
+
+       } else if (dateType === 'day') {
             const specificDate = document.getElementById('specific-date').value;
             searchUrl += `date_type=day&date=${specificDate}`;
+        } else if (dateType === 'range') {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            searchUrl += `date_type=range&start_date=${startDate}&end_date=${endDate}`;
         }
         
         window.location.href = searchUrl;

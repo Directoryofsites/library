@@ -743,6 +743,57 @@ async function filterDocumentsByDay(date) {
     }
 }
 
+// Filtrar documentos por rango de fechas
+async function filterDocumentsByRange(startDate, endDate) {
+    try {
+        console.log('Filtrando documentos por rango:', `${startDate} - ${endDate}`);
+        
+        // Crear fechas de inicio y fin con tiempo
+        const startDateTime = `${startDate}T00:00:00`;
+        const endDateTime = `${endDate}T23:59:59`;
+        
+        const { data, error } = await supabase
+            .from('documents')
+            .select('*')
+            .gte('created_at', startDateTime)
+            .lte('created_at', endDateTime)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const filteredDocs = data || [];
+        console.log(`Documentos encontrados entre ${startDate} y ${endDate}:`, filteredDocs.length);
+        
+        // Actualizar resultados
+        allDocuments = filteredDocs;
+        totalDocuments = filteredDocs.length;
+        renderDocuments(filteredDocs.slice(0, documentsPerPage));
+        generatePagination(totalDocuments, documentsPerPage, 1);
+        currentPage = 1;
+        
+        // Formatear fechas para mostrar
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        const formattedStartDate = startDateObj.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        const formattedEndDate = endDateObj.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        // Mostrar mensaje informativo
+        showDateFilterMessage(`Mostrando documentos desde ${formattedStartDate} hasta ${formattedEndDate} (${filteredDocs.length} resultados)`);
+        
+    } catch (error) {
+        console.error('Error al filtrar por rango:', error);
+        showDateFilterMessage('Error al aplicar filtro de rango de fechas', true);
+    }
+}
+
 // Mostrar mensaje informativo de filtro de fecha
 function showDateFilterMessage(message, isError = false) {
     // Remover mensaje anterior si existe
@@ -815,6 +866,12 @@ function checkForDateFilters() {
             const date = urlParams.get('date');
             if (date) {
                 filterDocumentsByDay(date);
+            }
+        } else if (dateType === 'range') {
+            const startDate = urlParams.get('start_date');
+            const endDate = urlParams.get('end_date');
+            if (startDate && endDate) {
+                filterDocumentsByRange(startDate, endDate);
             }
         }
     }

@@ -559,7 +559,7 @@ function generateGlobalNavigation() {
                             </ul>
                         </li>
                         -->
-                        <li><a href="faculty.html">Enlaces</a></li>
+                        <li><a href="etiquetado-automatico.html">Enlaces</a></li>
                         <!-- Menú Títulos desactivado temporalmente
                         <li><a href="admissions.html">Titulos</a>
                             <ul>
